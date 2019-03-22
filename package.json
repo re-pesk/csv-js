@@ -4,7 +4,7 @@
   "description": "CSV converter to json",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "npx babel-node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Rėdas Peškaitis",
@@ -14,6 +14,10 @@
     "url": "https://github.com/re-pe/csv-js.git"
   },
   "devDependencies": {
+    "@babel/core": "^7.4.0",
+    "@babel/node": "^7.2.2",
+    "@babel/plugin-transform-modules-umd": "^7.2.0",
+    "@babel/preset-env": "^7.4.2",
     "babel-eslint": "^10.0.1",
     "eslint": "^5.15.3",
     "eslint-config-airbnb": "^17.1.0",
