@@ -17,15 +17,18 @@ const ESCAPED = DQUOTE + '(?:' + TEXTDATA + '|' + COMMA + '|' + CR + '|' + LF + 
 
 const CSV_PATTERN = '(' + EOL + '|' + COMMA + '|' + NL + ')(' + ESCAPED + '|' + NON_ESCAPED + ')?';
 const csvRegexp = new RegExp(CSV_PATTERN, 'gm');
+/* eslint-enable prefer-template */
 
 const rSeparator = /^,|\r\n|\r|\n/;
 const rOuterQuotes = /^"|"$/g;
 const rInnerQuotes = /""/g;
 const rEmptyValue = /^$/;
 
+const allowedProperties = ['withHeader', 'withNull'];
+
 function tokenize(csv) {
   // eslint-disable-next-line quotes
-  const data = "\n" + csv.trim();
+  const data = `\n${csv.trim()}`;
   const tokens = data.match(csvRegexp);
   return tokens;
 }
@@ -49,7 +52,8 @@ function convertValue(value, withNull) {
 
 function tokensToDataTree(tokens, privateProperties) {
   const tree = { records: [] };
-  let withHeader = privateProperties.with_header;
+  let { withHeader } = privateProperties;
+  const { withNull } = privateProperties;
   let fillingHeader = false;
   tokens.forEach((member) => {
     const match = member.match(rSeparator);
@@ -66,7 +70,7 @@ function tokensToDataTree(tokens, privateProperties) {
 
     let value = member.substring(match[0].length);
 
-    value = convertValue(value, privateProperties.with_null);
+    value = convertValue(value, withNull);
 
     if (fillingHeader) {
       tree.header.push(value);
@@ -78,48 +82,60 @@ function tokensToDataTree(tokens, privateProperties) {
   return tree;
 }
 
-function CsvParser(with_header = false, with_null = false) {
-  const privateProperties = {
-    with_header,
-    with_null,
-  };
+function makeDataTree(data, privateProperties) {
+  const tokens = tokenize(data);
+  const dataTree = tokensToDataTree(tokens, privateProperties);
+  return dataTree;
+}
 
-  class CsvParserClass extends Parser {
-    constructor(_with_header = false, _with_null = false) {
-      super();
-      this.withHeader(_with_header);
-      this.withNull(_with_null);
-    }
-
-    static inputType() {
-      return 'csv';
-    }
-
-    // eslint-disable-next-line class-methods-use-this
-    withHeader(value) {
-      if (typeof value !== 'boolean') {
-        throw new TypeError('Value must be boolean');
-      }
-      privateProperties.with_header = value;
-    }
-
-    // eslint-disable-next-line class-methods-use-this
-    withNull(value) {
-      if (typeof value !== 'boolean') {
-        throw new TypeError('Value must be boolean');
-      }
-      privateProperties.with_null = value;
-    }
-
-    // eslint-disable-next-line class-methods-use-this
-    makeDataTree(data) {
-      const tokens = tokenize(data);
-      const dataTree = tokensToDataTree(tokens, privateProperties);
-      return dataTree;
-    }
+function setBooleanProperty(propertyName, value, privateProperties) {
+  if (!['boolean', 'undefined'].includes(typeof value)) {
+    throw new TypeError(`Value of ${propertyName} property must be boolean or undefined`);
   }
+  // eslint-disable-next-line no-param-reassign
+  privateProperties[propertyName] = value || false;
+}
 
-  return new CsvParserClass(with_header, with_null);
+function setProperties(properties, privateProperties) {
+  Object.getOwnPropertyNames(properties).forEach((name) =>{
+    if (!allowedProperties.includes(name)) {
+      throw new TypeError('Name of property is not allowed.');
+    }
+    setBooleanProperty(name, properties[name], privateProperties);
+  });
+}
+
+// Constructor
+function CsvParser(properties = {}) {
+  const privateProperties = {
+    withHeader: false,
+    withNull: false,
+  };
+  setProperties(properties, privateProperties);
+
+  const csvParser = Object.create(
+    Object.defineProperties(
+      Object.create(
+        Parser.prototype,
+      ),
+      {
+        inputType: {
+          value: 'csv',
+        },
+        withHeader: {
+          set: value => setBooleanProperty('withHeader', value, privateProperties),
+        },
+        withNull: {
+          set: value => setBooleanProperty('withNull', value, privateProperties),
+        },
+        makeDataTree: {
+          value: data => makeDataTree(data, privateProperties),
+        },
+      },
+    ),
+  );
+
+  return csvParser;
 }
 
 module.exports = { CsvParser };
