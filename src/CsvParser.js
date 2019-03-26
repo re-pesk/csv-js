@@ -1,4 +1,3 @@
-/* eslint-disable prefer-template */
 const { Parser } = require('./Parser');
 
 const CR = '\\r';
@@ -9,15 +8,14 @@ const DQUOTE = '"';
 const TEXTDATA = '[ -!]|[#-+]|[--~]';
 
 const CRLF = CR + LF;
-const EOL = CRLF + '|' + CR + '|' + LF;
-const DOUBLE_DQUOTE = DQUOTE + '{2}';
+const EOL = `${CRLF}|${CR}|${LF}`;
+const DOUBLE_DQUOTE = `${DQUOTE}{2}`;
 
-const NON_ESCAPED = '(?:' + TEXTDATA + ')+';
-const ESCAPED = DQUOTE + '(?:' + TEXTDATA + '|' + COMMA + '|' + CR + '|' + LF + '|' + DOUBLE_DQUOTE + ')*' + DQUOTE;
+const NON_ESCAPED = `${TEXTDATA}+`;
+const ESCAPED = `${DQUOTE}(?:${TEXTDATA}|${COMMA}|${CR}|${LF}|${DOUBLE_DQUOTE})*${DQUOTE}`;
 
-const CSV_PATTERN = '(' + EOL + '|' + COMMA + '|' + NL + ')(' + ESCAPED + '|' + NON_ESCAPED + ')?';
+const CSV_PATTERN = `(${EOL}|${COMMA}|${NL})(${ESCAPED}|${NON_ESCAPED})?`;
 const csvRegexp = new RegExp(CSV_PATTERN, 'gm');
-/* eslint-enable prefer-template */
 
 const rSeparator = /^,|\r\n|\r|\n/;
 const rOuterQuotes = /^"|"$/g;
@@ -115,17 +113,17 @@ function CsvParser(properties = {}) {
 
   const csvParser = Object.create(
     Object.defineProperties(
-      Object.create(
-        Parser.prototype,
-      ),
+      Object.create(Parser.prototype),
       {
         inputType: {
           value: 'csv',
         },
         withHeader: {
+          get: () => privateProperties.withHeader,
           set: value => setBooleanProperty('withHeader', value, privateProperties),
         },
         withNull: {
+          get: () => privateProperties.withNull,
           set: value => setBooleanProperty('withNull', value, privateProperties),
         },
         makeDataTree: {
