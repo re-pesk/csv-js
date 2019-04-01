@@ -88,7 +88,7 @@ function makeDataTree(data, privateProperties) {
 
 function setBooleanProperty(propertyName, value, privateProperties) {
   if (!['boolean', 'undefined'].includes(typeof value)) {
-    throw new TypeError(`Value of ${propertyName} property must be boolean or undefined`);
+    throw new TypeError(`Value of "${propertyName}" property must be boolean or undefined`);
   }
   // eslint-disable-next-line no-param-reassign
   privateProperties[propertyName] = value || false;
