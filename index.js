@@ -20,6 +20,7 @@ csvParser.inputType = 'ddd';
 
 const csvParser2 = CsvParser();
 csvParser2.withNull = true;
+csvParser2.withNull = 15;
 
 const tree = csvParser.makeDataTree(csv);
 const tree2 = csvParser2.makeDataTree(csv);
@@ -47,3 +48,4 @@ jsonConverter.replacer = (key, value) => {
 };
 jsonConverter.space = '';
 console.log(jsonConverter.convert(tree));
+console.log(jsonConverter.convert(tree2));
