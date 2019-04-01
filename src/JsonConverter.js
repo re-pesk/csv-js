@@ -2,7 +2,7 @@ const { Converter } = require('./Converter');
 
 function setReplacer(value, privateProperties) {
   if (!['undefined', 'function'].includes(typeof value) && value !== null) {
-    throw new TypeError('Value of replacer property must be function, null or undefined.');
+    throw new TypeError('Value of "replacer" property must be function, null or undefined.');
   }
   // eslint-disable-next-line no-param-reassign
   privateProperties.replacer = value;
@@ -10,7 +10,7 @@ function setReplacer(value, privateProperties) {
 
 function setSpace(value, privateProperties) {
   if (!['string', 'number'].includes(typeof value)) {
-    throw new TypeError('Value of space property must be string or number.');
+    throw new TypeError('Value of "space" property must be string or number.');
   }
   // eslint-disable-next-line no-param-reassign
   privateProperties.space = value;

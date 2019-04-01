@@ -20,32 +20,31 @@ csvParser.inputType = 'ddd';
 
 const csvParser2 = CsvParser();
 csvParser2.withNull = true;
-csvParser2.withNull = 15;
 
 const tree = csvParser.makeDataTree(csv);
 const tree2 = csvParser2.makeDataTree(csv);
 
 const jsonConverter = new JsonConverter({ replacer: null, space: 2 });
-jsonConverter.replacer = (key, value) => {
-  // Filtering out properties
-  if (key === 'header') {
-    return undefined;
-  }
-  return value;
-};
+// jsonConverter.replacer = (key, value) => {
+//   // Filtering out properties
+//   if (key === 'header') {
+//     return undefined;
+//   }
+//   return value;
+// };
 
 console.log(jsonConverter.outputType);
 console.log(jsonConverter instanceof Converter);
 console.log(jsonConverter.constructor.name);
 
 console.log(jsonConverter.convert(tree));
-jsonConverter.replacer = (key, value) => {
-  // Filtering out properties
-  if (key === 'records') {
-    return undefined;
-  }
-  return value;
-};
+// jsonConverter.replacer = (key, value) => {
+//   // Filtering out properties
+//   if (key === 'records') {
+//     return undefined;
+//   }
+//   return value;
+// };
 jsonConverter.space = '';
 console.log(jsonConverter.convert(tree));
 console.log(jsonConverter.convert(tree2));

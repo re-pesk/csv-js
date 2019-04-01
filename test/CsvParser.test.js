@@ -23,7 +23,6 @@ describe('CsvParser', () => {
       expect(csvParser).to.have.property('withHeader', false);
     });
     it('setter throws error if new value has not allowed type', () => {
-      csvParser.withHeader = 5;
       expect(csvParser.withHeader = 5).to.throw(TypeError, 'Value of "withHeader" property must be boolean or undefined');
     });
     it('setter changes value of the property to true', () => {
