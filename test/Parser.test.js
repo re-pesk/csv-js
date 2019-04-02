@@ -1,9 +1,11 @@
 const { describe, it } = require('mocha');
-const { expect } = require('chai');
+const should = require('chai').should();
 const { Parser } = require('../src/Parser');
 
-describe('Parser()', () => {
-  it('Call to Parser produces TypeError', () => {
-    expect(Parser).to.throw(TypeError, 'Cannot construct Parser instances directly');
+describe('Parser', () => {
+  describe('()', () => {
+    it('Direct calling throws TypeError', () => {
+      Parser.should.throw(TypeError, 'Cannot construct instances of Parser directly');
+    });
   });
 });
