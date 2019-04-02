@@ -1,4 +1,4 @@
-/* eslint-disable no-undef */
+const { describe, it } = require('mocha');
 const { expect } = require('chai');
 const { Parser } = require('../src/Parser');
 
