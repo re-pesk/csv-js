@@ -107,8 +107,15 @@ typings/
 
 # End of https://www.gitignore.io/api/node,netbeans,visualstudiocode
 
-## Ignore draft files
+### Visual Studio Code
+# Ignore temporary files
+tempCodeRunnerFile.js
+
+### CollabNet GitEye
+# Ignore project folder
+/.project
+
+### re-pe
+# Ignore draft files
 *.*_
 
-## Ignore temp file
-tempCodeRunnerFile.js
