@@ -15,7 +15,7 @@ const NON_ESCAPED = `${TEXTDATA}+`;
 const ESCAPED = `${DQUOTE}(?:${TEXTDATA}|${COMMA}|${CR}|${LF}|${DOUBLE_DQUOTE})*${DQUOTE}`;
 
 const CSV_PATTERN = `(${EOL}|${COMMA}|${NL})(${ESCAPED}|${NON_ESCAPED})?`;
-const csvRegexp = new RegExp(CSV_PATTERN, 'gm');
+const csvRegexp = new RegExp(CSV_PATTERN, 'g');
 
 const rSeparator = /^,|\r\n|\r|\n/;
 const rOuterQuotes = /^"|"$/g;
@@ -33,19 +33,16 @@ function tokenize(csv) {
 
 function convertValue(value, withNull) {
   if (!Number.isNaN(Number.parseFloat(value))) {
-    return parseFloat(value);
-  }
-  if (!Number.isNaN(Number.parseInt(value, 10))) {
-    return parseInt(value, 10);
-  }
-  if (typeof value === 'string') {
-    if (withNull && rEmptyValue.test(value)) {
-      return null;
+    if (value.indexOf('.') !== -1 ) {
+      return Number.parseFloat(value);
     }
-    const newValue = value.replace(rOuterQuotes, '');
-    return newValue.replace(rInnerQuotes, '"');
+    return Number.parseInt(value, 10);
   }
-  return value;
+  if (withNull && rEmptyValue.test(value)) {
+    return null;
+  }
+  const newValue = value.replace(rOuterQuotes, '');
+  return newValue.replace(rInnerQuotes, '"');
 }
 
 function tokensToDataTree(tokens, privateProperties) {
@@ -81,23 +78,26 @@ function tokensToDataTree(tokens, privateProperties) {
 }
 
 function makeDataTree(data, privateProperties) {
+  if (typeof data !== 'string') {
+    throw TypeError('Value of argument must be string.');
+  }
   const tokens = tokenize(data);
   const dataTree = tokensToDataTree(tokens, privateProperties);
   return dataTree;
 }
 
 function setBooleanProperty(propertyName, value, privateProperties) {
-  if (!['boolean', 'undefined'].includes(typeof value)) {
-    throw new TypeError(`Value of "${propertyName}" property must be boolean or undefined`);
+  if (!['boolean', 'undefined', 'object'].includes(typeof value) && value !== null) {
+    throw new TypeError(`Value of #${propertyName} property must be boolean, undefined or null.`);
   }
   // eslint-disable-next-line no-param-reassign
   privateProperties[propertyName] = value || false;
 }
 
 function setProperties(properties, privateProperties) {
-  Object.getOwnPropertyNames(properties).forEach((name) =>{
+  Object.getOwnPropertyNames(properties).forEach((name) => {
     if (!allowedProperties.includes(name)) {
-      throw new TypeError('Name of property is not allowed.');
+      throw new TypeError(`"${name}" is not a name of property.`);
     }
     setBooleanProperty(name, properties[name], privateProperties);
   });
@@ -111,26 +111,28 @@ function CsvParser(properties = {}) {
   };
   setProperties(properties, privateProperties);
 
-  const csvParser = Object.create(
-    Object.defineProperties(
-      Object.create(Parser.prototype),
-      {
-        inputType: {
-          value: 'csv',
+  const csvParser = Object.seal(
+    Object.create(
+      Object.defineProperties(
+        Object.create(Parser.prototype),
+        {
+          inputType: {
+            value: 'csv',
+          },
+          withHeader: {
+            get: () => privateProperties.withHeader,
+            set: value => setBooleanProperty('withHeader', value, privateProperties),
+          },
+          withNull: {
+            get: () => privateProperties.withNull,
+            set: value => setBooleanProperty('withNull', value, privateProperties),
+          },
+          makeDataTree: {
+            value: data => makeDataTree(data, privateProperties),
+          },
         },
-        withHeader: {
-          get: () => privateProperties.withHeader,
-          set: value => setBooleanProperty('withHeader', value, privateProperties),
-        },
-        withNull: {
-          get: () => privateProperties.withNull,
-          set: value => setBooleanProperty('withNull', value, privateProperties),
-        },
-        makeDataTree: {
-          value: data => makeDataTree(data, privateProperties),
-        },
-      },
-    ),
+      ),
+    )
   );
 
   return csvParser;
