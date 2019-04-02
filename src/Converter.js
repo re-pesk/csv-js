@@ -1,7 +1,7 @@
 // Interface
 
 function Converter() {
-  throw new TypeError('Cannot construct Converter instances directly');
+  throw new TypeError('Cannot construct instances of Converter directly');
 }
 
 module.exports = {
