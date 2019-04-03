@@ -129,7 +129,7 @@ describe('JsonConverter', () => {
     });
     describe('returns appropriate string:', () => {
       const tree = {
-        header: ['field_name_1', 'Field\nName 2', 'field_name_3'],
+        header: ['field_name_1', 'Field\nName 2', 'field_name_3 '],
         records: [
           ['aaa', 'b \n,bb', 'ccc"ddd'],
           ['zzz', null, ''],
@@ -140,13 +140,13 @@ describe('JsonConverter', () => {
       it('when #replacer and #space are null', () => {
         expect(jsonConverter.replacer).to.equal(null);
         expect(jsonConverter.space).to.equal(null);
-        expect(jsonConverter.convert(tree)).to.equal('{"header":["field_name_1","Field\\nName 2","field_name_3"],"records":[["aaa","b \\n,bb","ccc\\"ddd"],["zzz",null,""],[1,2.2,null],[null,3,null]]}');
+        expect(jsonConverter.convert(tree)).to.equal('{"header":["field_name_1","Field\\nName 2","field_name_3 "],"records":[["aaa","b \\n,bb","ccc\\"ddd"],["zzz",null,""],[1,2.2,null],[null,3,null]]}');
       });
       it('when #replacer is array and #space is null', () => {
         jsonConverter.replacer = ['header'];
         expect(jsonConverter.replacer).to.deep.equal(['header']);
         expect(jsonConverter.space).to.equal(null);
-        expect(jsonConverter.convert(tree)).to.equal('{"header":["field_name_1","Field\\nName 2","field_name_3"]}');
+        expect(jsonConverter.convert(tree)).to.equal('{"header":["field_name_1","Field\\nName 2","field_name_3 "]}');
       });
       it('when #replacer is function and #space is null', () => {
         const replacer = (key, value) => {
@@ -162,7 +162,7 @@ describe('JsonConverter', () => {
         expect(jsonConverter.convert(tree)).to.equal('{"records":[["aaa","b \\n,bb","ccc\\"ddd"],["zzz",null,""],[1,2.2,null],[null,3,null]]}');
       });
       it('when #replacer is array and #space is "  "', () => {
-        const expected = '{\n  "header": [\n    "field_name_1",\n    "Field\\nName 2",\n    "field_name_3"\n  ]\n}';
+        const expected = '{\n  "header": [\n    "field_name_1",\n    "Field\\nName 2",\n    "field_name_3 "\n  ]\n}';
         jsonConverter.replacer = ['header'];
         jsonConverter.space = '  ';
         expect(jsonConverter.replacer).to.deep.equal(['header']);
@@ -170,7 +170,7 @@ describe('JsonConverter', () => {
         expect(jsonConverter.convert(tree)).to.equal(expected);
       });
       it('when #replacer is array and #space is 2', () => {
-        const expected = '{\n  "header": [\n    "field_name_1",\n    "Field\\nName 2",\n    "field_name_3"\n  ]\n}';
+        const expected = '{\n  "header": [\n    "field_name_1",\n    "Field\\nName 2",\n    "field_name_3 "\n  ]\n}';
         jsonConverter.replacer = ['header'];
         jsonConverter.space = 2;
         expect(jsonConverter.replacer).to.deep.equal(['header']);
