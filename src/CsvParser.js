@@ -46,20 +46,19 @@ function convertValue(value, withNull) {
 }
 
 function tokensToDataTree(tokens, privateProperties) {
-  const tree = { records: [] };
-  let { withHeader } = privateProperties;
-  const { withNull } = privateProperties;
-  let fillingHeader = false;
+  const header = [];
+  const records = [];
+  let recordno = -1;
+  const { withHeader, withNull } = privateProperties;
   tokens.forEach((member) => {
     const match = member.match(rSeparator);
     if (match[0] !== ',') {
-      if (withHeader) {
-        withHeader = false;
-        fillingHeader = true;
-        tree.header = [];
-      } else {
-        fillingHeader = false;
-        tree.records.push([]);
+      if (!withHeader && recordno < 0) {
+        recordno = 0;
+      }
+      recordno += 1;
+      if (recordno > 0) {
+        records.push([]);
       }
     }
 
@@ -67,13 +66,18 @@ function tokensToDataTree(tokens, privateProperties) {
 
     value = convertValue(value, withNull);
 
-    if (fillingHeader) {
-      tree.header.push(value);
+    if (recordno < 1) {
+      header.push(value);
     } else {
-      tree.records[tree.records.length - 1].push(value);
+      records[records.length - 1].push(value);
     }
   });
 
+  const tree = {};
+  if (withHeader) {
+    tree.header = header;
+  }
+  tree.records = records;
   return tree;
 }
 
@@ -87,7 +91,7 @@ function makeDataTree(data, privateProperties) {
 }
 
 function setBooleanProperty(propertyName, value, privateProperties) {
-  if (!['boolean', 'undefined', 'object'].includes(typeof value) && value !== null) {
+  if (!['boolean', 'undefined'].includes(typeof value) && value !== null) {
     throw new TypeError(`Value of #${propertyName} property must be boolean, undefined or null.`);
   }
   // eslint-disable-next-line no-param-reassign
