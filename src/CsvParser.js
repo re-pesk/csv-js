@@ -33,7 +33,7 @@ function tokenize(csv) {
 
 function convertValue(value, withNull) {
   if (!Number.isNaN(Number.parseFloat(value))) {
-    if (value.indexOf('.') !== -1 ) {
+    if (value.indexOf('.') !== -1) {
       return Number.parseFloat(value);
     }
     return Number.parseInt(value, 10);
@@ -136,7 +136,7 @@ function CsvParser(properties = {}) {
           },
         },
       ),
-    )
+    ),
   );
 
   return csvParser;
