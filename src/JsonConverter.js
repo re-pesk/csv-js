@@ -1,19 +1,19 @@
 const { Converter } = require('./Converter');
 
 function setReplacer(value, privateProperties) {
-  if (!['undefined', 'function'].includes(typeof value) && value !== null) {
-    throw new TypeError('Value of "replacer" property must be function, null or undefined.');
+  if (!['function', 'undefined'].includes(typeof value) && value !== null && !Array.isArray(value)) {
+    throw new TypeError('Value of #replacer" property must be function, array, null or undefined.');
   }
   // eslint-disable-next-line no-param-reassign
-  privateProperties.replacer = value;
+  privateProperties.replacer = value || null;
 }
 
 function setSpace(value, privateProperties) {
-  if (!['string', 'number'].includes(typeof value)) {
-    throw new TypeError('Value of "space" property must be string or number.');
+  if (!['string', 'number', 'undefined'].includes(typeof value) && value !== null) {
+    throw new TypeError('Value of #space property must be string, number, null or undefined.');
   }
   // eslint-disable-next-line no-param-reassign
-  privateProperties.space = value;
+  privateProperties.space = value || null;
 }
 
 const allowedProperties = { replacer: setReplacer, space: setSpace };
@@ -21,7 +21,7 @@ const allowedProperties = { replacer: setReplacer, space: setSpace };
 function setProperties(properties, privateProperties) {
   Object.keys(properties).forEach((name) => {
     if (!Object.keys(allowedProperties).includes(name)) {
-      throw new TypeError('Name of property is not allowed.');
+      throw new TypeError(`"${name}" is not a name of property.`);
     }
     allowedProperties[name](properties[name], privateProperties);
   });
@@ -35,30 +35,32 @@ function convert(data, privateProperties) {
 function JsonConverter(properties = {}) {
   const privateProperties = {
     replacer: null,
-    space: undefined,
+    space: null,
   };
 
   setProperties(properties, privateProperties);
 
-  const jsonConverter = Object.create(
-    Object.defineProperties(
-      Object.create(Converter.prototype),
-      {
-        outputType: {
-          value: 'json',
+  const jsonConverter = Object.seal(
+    Object.create(
+      Object.defineProperties(
+        Object.create(Converter.prototype),
+        {
+          outputType: {
+            value: 'json',
+          },
+          replacer: {
+            get: () => privateProperties.replacer,
+            set: value => setReplacer(value, privateProperties),
+          },
+          space: {
+            get: () => privateProperties.space,
+            set: value => setSpace(value, privateProperties),
+          },
+          convert: {
+            value: data => convert(data, privateProperties),
+          },
         },
-        replacer: {
-          get: () => privateProperties.replacer,
-          set: value => setReplacer(value, privateProperties),
-        },
-        space: {
-          get: () => privateProperties.space,
-          set: value => setSpace(value, privateProperties),
-        },
-        convert: {
-          value: data => convert(data, privateProperties),
-        },
-      },
+      ),
     ),
   );
 
