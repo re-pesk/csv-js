@@ -5,7 +5,7 @@ const LF = '\\n';
 const NL = '^';
 const COMMA = ',';
 const DQUOTE = '"';
-const TEXTDATA = '[ -!]|[#-+]|[--~]';
+const TEXTDATA = '[\x20-!#-+--~]';
 
 const CRLF = CR + LF;
 const EOL = `${CRLF}|${CR}|${LF}`;
