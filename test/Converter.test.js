@@ -1,11 +1,11 @@
 const { describe, it } = require('mocha');
-const should = require('chai').should();
+const { expect } = require('chai');
 const { Converter } = require('../src/Converter');
 
 describe('Converter', () => {
   describe('()', () => {
     it('Direct calling throws TypeError', () => {
-      Converter.should.throw(TypeError, 'Cannot construct instances of Converter directly');
+      expect(Converter).to.throw(TypeError, 'Cannot construct instances of Converter directly');
     });
   });
 });
