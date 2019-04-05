@@ -1,11 +1,10 @@
-const { describe, it } = require('mocha');
-const { expect } = require('chai');
+/* eslint-disable no-undef */
 const { Converter } = require('../src/Converter');
 
 describe('Converter', () => {
   describe('()', () => {
     it('Direct calling throws TypeError', () => {
-      expect(Converter).to.throw(TypeError, 'Cannot construct instances of Converter directly');
+      expect(Converter).toThrow(TypeError, 'Cannot construct instances of Converter directly');
     });
   });
 });
