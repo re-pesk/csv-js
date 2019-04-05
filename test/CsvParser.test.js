@@ -177,10 +177,14 @@ zzz,,""
       ));
     });
     describe('returns appropriate data tree:', () => {
-      const csvParser = CsvParser();
-      const csv = '';
-      it('when input is empty string', () => {
-        expect(csvParser.makeDataTree(csv)).to.eql({ records: [['']] });
+      const csvParser = CsvParser({ withHeader: true });
+      it('when input is empty string and #withHeader is true', () => {
+        const csv = '';
+        expect(csvParser.makeDataTree(csv)).to.deep.equal({ header: [''] });
+      });
+      it('when input has only record and #withHeader is true', () => {
+        const csv = 'field_name_1,"Field\\nName 2",field_name_3 ';
+        expect(csvParser.makeDataTree(csv)).to.deep.equal({ header: ['field_name_1', 'Field\\nName 2', 'field_name_3 '] });
       });
     });
     describe('throws error:', () => {
@@ -188,7 +192,7 @@ zzz,,""
       const branch = withHeader ? 'header' : 'first record';
       // const csvParser = CsvParser();
       const csvParser = CsvParser({ withHeader, withNull: true });
-      it('throws error called without argument', () => {
+      it('when called without argument', () => {
         expect(() => csvParser.makeDataTree()).to.throw(
           TypeError,
           'Value of argument must be string.',
