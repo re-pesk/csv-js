@@ -2,32 +2,44 @@ const { Parser } = require('./Parser');
 
 const CR = '\\r';
 const LF = '\\n';
-const NL = '^';
+const START_OF_LINE = '^';
 const COMMA = ',';
 const DQUOTE = '"';
 const TEXTDATA = '[\x20-!#-+--~]';
 
-const CRLF = CR + LF;
-const EOL = `${CRLF}|${CR}|${LF}`;
+const SEPARATOR = `${CR}${LF}|${CR}|${LF}|${COMMA}|${START_OF_LINE}`;
 const DOUBLE_DQUOTE = `${DQUOTE}{2}`;
 
 const NON_ESCAPED = `${TEXTDATA}+`;
-const ESCAPED = `${DQUOTE}(?:${TEXTDATA}|${COMMA}|${CR}|${LF}|${DOUBLE_DQUOTE})*${DQUOTE}`;
+const ESCAPED = `${DQUOTE}(?:${DOUBLE_DQUOTE}|${TEXTDATA}|${COMMA}|${CR}|${LF})*${DQUOTE}`;
+const CORRUPTED_TAIL = `(?:${DQUOTE}|[^${DQUOTE}${COMMA}${CR}${LF}])*`;
 
-const CSV_PATTERN = `(${EOL}|${COMMA}|${NL})(${ESCAPED}|${NON_ESCAPED})?`;
+const CSV_PATTERN = `(${SEPARATOR})(${ESCAPED}|${NON_ESCAPED}|)(${CORRUPTED_TAIL})`;
+
 const csvRegexp = new RegExp(CSV_PATTERN, 'g');
 
-const rSeparator = /^,|\r\n|\r|\n/;
+const lastEol = new RegExp(`${CR}${LF}|${CR}|${LF}$`);
 const rOuterQuotes = /^"|"$/g;
 const rInnerQuotes = /""/g;
 const rEmptyValue = /^$/;
 
 const allowedProperties = ['withHeader', 'withNull'];
 
-function tokenize(csv) {
+function tokenize(inputStr) {
   // eslint-disable-next-line quotes
-  const data = `\n${csv.trim()}`;
-  const tokens = data.match(csvRegexp);
+  // const data = `\n${csv.trim()}`;
+  const str = inputStr.replace(lastEol, '');
+  if (str === '') {
+    return [csvRegexp.exec(str)];
+  }
+  const tokens = [];
+  let token;
+  do {
+    token = csvRegexp.exec(str);
+    if (token !== null) {
+      tokens.push(token);
+    }
+  } while (token !== null);
   return tokens;
 }
 
@@ -46,38 +58,44 @@ function convertValue(value, withNull) {
 }
 
 function tokensToDataTree(tokens, privateProperties) {
-  const header = [];
   const records = [];
-  let recordno = -1;
+  let fieldNo = 0;
   const { withHeader, withNull } = privateProperties;
-  tokens.forEach((member) => {
-    const match = member.match(rSeparator);
-    if (match[0] !== ',') {
-      if (!withHeader && recordno < 0) {
-        recordno = 0;
+  const branch = withHeader ? 'header' : 'first record';
+  tokens.forEach((token) => {
+    if (token[3] !== '') {
+      throw new SyntaxError(`Corrupted field '${token[2]}${token[3]}' starting at ${token.index + token[1].length} character!`);
+    }
+    if (token[1] !== ',') {
+      if (records.length > 1 && records[records.length - 1].length < records[0].length) {
+        throw new RangeError(`Error occured before field '${token[2]}${token[3]}' started at ${token.index + token[1].length} character: last record has less fields than ${branch}!`);
       }
-      recordno += 1;
-      if (recordno > 0) {
-        records.push([]);
+      records.push([]);
+      fieldNo = 1;
+    }
+
+    if (records.length > 1) {
+      if (fieldNo > records[0].length) {
+        throw new RangeError(`Index of curent field '${token[2]}${token[3]}' started at ${token.index + token[1].length} character is greater then number of fields in ${branch}!`);
       }
     }
 
-    let value = member.substring(match[0].length);
-
-    value = convertValue(value, withNull);
-
-    if (recordno < 1) {
-      header.push(value);
-    } else {
-      records[records.length - 1].push(value);
-    }
+    const value = convertValue(token[2], withNull);
+    records[records.length - 1].push(value);
+    fieldNo += 1;
   });
+
+  if (records[records.length - 1].length < records[0].length) {
+    throw new RangeError(`Last record has less fields than ${branch}!`);
+  }
 
   const tree = {};
   if (withHeader) {
-    tree.header = header;
+    tree.header = records.shift();
   }
-  tree.records = records;
+  if (records.length > 0) {
+    tree.records = records;
+  }
   return tree;
 }
 

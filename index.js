@@ -1,19 +1,27 @@
 const { CsvParser } = require('./src/CsvParser');
 const { JsonConverter } = require('./src/JsonConverter');
 
-const csv = 'field_name_1,"Field\nName 2",field_name_3 \n"aaa","b \n,bb","ccc""ddd"\nzzz,,""\n1,2.2,\n,3,\n';
+const csvList = {
+  0: 'a,b,c\nzzz,,""\n,,',
+  1: 'a,b,c\nzzz,""\n,,',
+  2: 'a,b,c\nzzz,,,""\n,,',
+  3: 'a,b,c\nzzz,,""\n,',
+  4: 'a,b,c\nzzz,",""\n,,',
+  5: 'a,b,c\nzzz,,""abc\n,,',
+};
 
-const csvParser = CsvParser();
-csvParser.withHeader = true;
-csvParser.withNull = true;
-
-const tree = csvParser.makeDataTree(csv);
+const csvParser = CsvParser({ withHeader: true });
 const jsonConverter = new JsonConverter();
-const testStr = jsonConverter.convert(tree);
 
-console.log('csv =>');
-console.log(`\`${csv}\``);
-console.log('tree =>');
-console.log(tree);
-console.log('testStr =>');
-console.log(`'${testStr}'`);
+Object.getOwnPropertyNames(csvList).forEach((key) => {
+  let tree;
+  try {
+    tree = csvParser.makeDataTree(csvList[key]);
+    console.log(key, 'tree =>', tree);
+
+    const testStr = jsonConverter.convert(tree);
+    console.log('  testStr =>', testStr);
+  } catch (e) {
+    console.log(key, e.message);
+  }
+});
