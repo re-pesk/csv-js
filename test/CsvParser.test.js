@@ -107,11 +107,12 @@ zzz,,""
 1,2.2,
 ,3,
 `;
-      it('when #withHeader is false and #withNull is false', () => {
-        expect(csvParser.withHeader).to.equal(false);
-        expect(csvParser.withNull).to.equal(false);
-        expect(csvParser.makeDataTree(csv)).to.eql(
-          {
+      const testDataList = [
+        {
+          it: 'when #withHeader is false and #withNull is false',
+          withHeader: false,
+          withNull: false,
+          tree: {
             records: [
               ['field_name_1', 'Field\nName 2', 'field_name_3 '],
               ['aaa', 'b \n,bb', 'ccc"ddd'],
@@ -120,14 +121,12 @@ zzz,,""
               ['', 3, ''],
             ],
           },
-        );
-      });
-      it('when #withHeader is true and #withNull is false', () => {
-        csvParser.withHeader = true;
-        expect(csvParser.withHeader).to.equal(true);
-        expect(csvParser.withNull).to.equal(false);
-        expect(csvParser.makeDataTree(csv)).to.eql(
-          {
+        },
+        {
+          it: 'when #withHeader is true and #withNull is false',
+          withHeader: true,
+          withNull: false,
+          tree: {
             header: ['field_name_1', 'Field\nName 2', 'field_name_3 '],
             records: [
               ['aaa', 'b \n,bb', 'ccc"ddd'],
@@ -136,15 +135,12 @@ zzz,,""
               ['', 3, ''],
             ],
           },
-        );
-      });
-      it('when #withHeader is false and #withNull is true', () => {
-        csvParser.withHeader = false;
-        csvParser.withNull = true;
-        expect(csvParser.withHeader).to.equal(false);
-        expect(csvParser.withNull).to.equal(true);
-        expect(csvParser.makeDataTree(csv)).to.eql(
-          {
+        },
+        {
+          it: 'when #withHeader is false and #withNull is true',
+          withHeader: false,
+          withNull: true,
+          tree: {
             records: [
               ['field_name_1', 'Field\nName 2', 'field_name_3 '],
               ['aaa', 'b \n,bb', 'ccc"ddd'],
@@ -153,14 +149,12 @@ zzz,,""
               [null, 3, null],
             ],
           },
-        );
-      });
-      it('when #withHeader is true and #withNull is true', () => {
-        csvParser.withHeader = true;
-        expect(csvParser.withHeader).to.equal(true);
-        expect(csvParser.withNull).to.equal(true);
-        expect(csvParser.makeDataTree(csv)).to.eql(
-          {
+        },
+        {
+          it: 'when #withHeader is true and #withNull is true',
+          withHeader: true,
+          withNull: true,
+          tree: {
             header: ['field_name_1', 'Field\nName 2', 'field_name_3 '],
             records: [
               ['aaa', 'b \n,bb', 'ccc"ddd'],
@@ -169,8 +163,18 @@ zzz,,""
               [null, 3, null],
             ],
           },
-        );
-      });
+        },
+      ];
+      testDataList.forEach(testData => it(
+        testData.it,
+        () => {
+          csvParser.withHeader = testData.withHeader;
+          csvParser.withNull = testData.withNull;
+          expect(csvParser.withHeader).to.equal(testData.withHeader);
+          expect(csvParser.withNull).to.equal(testData.withNull);
+          expect(csvParser.makeDataTree(csv)).to.deep.equal(testData.tree);
+        },
+      ));
     });
     describe('returns appropriate data tree:', () => {
       const csvParser = CsvParser();
@@ -180,31 +184,53 @@ zzz,,""
       });
     });
     describe('throws error:', () => {
-      const csvParser = CsvParser();
-      // const csvParser = CsvParser({ withHeader: true, withNull: true });
+      const withHeader = true;
+      const branch = withHeader ? 'header' : 'first record';
+      // const csvParser = CsvParser();
+      const csvParser = CsvParser({ withHeader, withNull: true });
       it('throws error called without argument', () => {
-        expect(() => csvParser.makeDataTree()).to.throw(TypeError, 'Value of argument must be string.');
+        expect(() => csvParser.makeDataTree()).to.throw(
+          TypeError,
+          'Value of argument must be string.',
+        );
       });
-      it('when record has less fields then first record', () => {
-        const csv = 'a,b,c\nzzz,""\n,,';
-        expect(() => csvParser.makeDataTree(csv)).to.throw(RangeError, 'Error occured before field \'\' started at 13 character: last record has less fields than first record!');
-      });
-      it('when last record has less fields then first record', () => {
-        const csv = 'a,b,c\nzzz,,""\n,';
-        expect(() => csvParser.makeDataTree(csv)).to.throw(RangeError, 'Last record has less fields than first record');
-      });
-      it('when record has more fields then first record', () => {
-        const csv = 'a,b,c\nzzz,,,""\n,,';
-        expect(() => { csvParser.makeDataTree(csv); }).to.throw(RangeError, 'Index of curent field \'""\' started at 12 character is greater then number of fields in first record!');
-      });
-      it('when non-escaped field has double quote', () => {
-        const csv = 'a,b,c\nzzz,",""\n,,';
-        expect(() => { csvParser.makeDataTree(csv); }).to.throw(SyntaxError, 'Corrupted field \'",""\' starting at 10 character!');
-      });
-      it('when escaped field has extra characters after double quote', () => {
-        const csv = 'a,b,c\nzzz,,""abc\n,,';
-        expect(() => { csvParser.makeDataTree(csv); }).to.throw(SyntaxError, 'Corrupted field \'""abc\' starting at 11 character!');
-      });
+      const testDataList = [
+        {
+          it: `when record has less fields than ${branch}`,
+          csv: 'a,b,c\nzzz,""\n,,',
+          errorClass: RangeError,
+          message: `Error occured before field '' started at 13 character: last record has less fields than ${branch}!`,
+        },
+        {
+          it: `when last record has less fields than ${branch}`,
+          csv: 'a,b,c\nzzz,,""\n,',
+          errorClass: RangeError,
+          message: `Last record has less fields than ${branch}!`,
+        },
+        {
+          it: `when record has more fields than ${branch}`,
+          csv: 'a,b,c\nzzz,,,""\n,,',
+          errorClass: RangeError,
+          message: `Index of curent field '""' started at 12 character is greater then number of fields in ${branch}!`,
+        },
+        {
+          it: 'when non-escaped field has double quote',
+          csv: 'a,b,c\nzzz,",""\n,,',
+          errorClass: SyntaxError,
+          message: 'Corrupted field \'",""\' starting at 10 character!',
+        },
+        {
+          it: 'when escaped field has extra characters after double quote',
+          csv: 'a,b,c\nzzz,,""abc\n,,',
+          errorClass: SyntaxError,
+          message: 'Corrupted field \'""abc\' starting at 11 character!',
+        },
+      ];
+      testDataList.forEach(testData => it(
+        testData.it,
+        () => expect(() => csvParser.makeDataTree(testData.csv))
+          .to.throw(testData.errorClass, testData.message),
+      ));
     });
   });
 });
