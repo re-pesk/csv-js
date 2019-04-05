@@ -1,18 +1,18 @@
 const { Parser } = require('./Parser');
 
-const CR = '\\r';
-const LF = '\\n';
+const CR = '\x0D'; // '\x0D' == '\r'
+const LF = '\x0A'; // '\x0A' == '\n'
 const START_OF_LINE = '^';
-const COMMA = ',';
-const DQUOTE = '"';
-const TEXTDATA = '[\x20-!#-+--~]';
+const COMMA = '\x2C'; // '\x2C' == ','
+const DQUOTE = '\x22'; // '\x22' == '"'
+const TEXTDATA = '[\x20-!#-+--~]'; // '\x20' == ' '
 
-const SEPARATOR = `${CR}${LF}|${CR}|${LF}|${COMMA}|${START_OF_LINE}`;
+const SEPARATOR = `${CR}${LF}|${COMMA}|${START_OF_LINE}`;
 const DOUBLE_DQUOTE = `${DQUOTE}{2}`;
 
 const NON_ESCAPED = `${TEXTDATA}+`;
 const ESCAPED = `${DQUOTE}(?:${DOUBLE_DQUOTE}|${TEXTDATA}|${COMMA}|${CR}|${LF})*${DQUOTE}`;
-const CORRUPTED_TAIL = `(?:${DQUOTE}|[^${DQUOTE}${COMMA}${CR}${LF}])*`;
+const CORRUPTED_TAIL = `(?:${DQUOTE}|${CR}(?!${LF})|[^${DQUOTE}${COMMA}])*`;
 
 const CSV_PATTERN = `(${SEPARATOR})(${ESCAPED}|${NON_ESCAPED}|)(${CORRUPTED_TAIL})`;
 
