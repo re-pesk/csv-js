@@ -97,11 +97,8 @@ describe('CsvParser', () => {
     });
   });
   describe('#makeDataTree', () => {
-    const csvParser = CsvParser();
-    it('throws error called without argument', () => {
-      expect(() => csvParser.makeDataTree()).to.throw(TypeError, 'Value of argument must be string.');
-    });
     describe('returns appropriate data tree:', () => {
+      const csvParser = CsvParser();
       const csv = `field_name_1,"Field
 Name 2",field_name_3 
 "aaa","b 
@@ -173,6 +170,40 @@ zzz,,""
             ],
           },
         );
+      });
+    });
+    describe('returns appropriate data tree:', () => {
+      const csvParser = CsvParser();
+      const csv = '';
+      it('when input is empty string', () => {
+        expect(csvParser.makeDataTree(csv)).to.eql({ records: [['']] });
+      });
+    });
+    describe('throws error:', () => {
+      const csvParser = CsvParser();
+      // const csvParser = CsvParser({ withHeader: true, withNull: true });
+      it('throws error called without argument', () => {
+        expect(() => csvParser.makeDataTree()).to.throw(TypeError, 'Value of argument must be string.');
+      });
+      it('when record has less fields then first record', () => {
+        const csv = 'a,b,c\nzzz,""\n,,';
+        expect(() => csvParser.makeDataTree(csv)).to.throw(RangeError, 'Error occured before field \'\' started at 13 character: last record has less fields than first record!');
+      });
+      it('when last record has less fields then first record', () => {
+        const csv = 'a,b,c\nzzz,,""\n,';
+        expect(() => csvParser.makeDataTree(csv)).to.throw(RangeError, 'Last record has less fields than first record');
+      });
+      it('when record has more fields then first record', () => {
+        const csv = 'a,b,c\nzzz,,,""\n,,';
+        expect(() => { csvParser.makeDataTree(csv); }).to.throw(RangeError, 'Index of curent field \'""\' started at 12 character is greater then number of fields in first record!');
+      });
+      it('when non-escaped field has double quote', () => {
+        const csv = 'a,b,c\nzzz,",""\n,,';
+        expect(() => { csvParser.makeDataTree(csv); }).to.throw(SyntaxError, 'Corrupted field \'",""\' starting at 10 character!');
+      });
+      it('when escaped field has extra characters after double quote', () => {
+        const csv = 'a,b,c\nzzz,,""abc\n,,';
+        expect(() => { csvParser.makeDataTree(csv); }).to.throw(SyntaxError, 'Corrupted field \'""abc\' starting at 11 character!');
       });
     });
   });
