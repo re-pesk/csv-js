@@ -1,43 +1,120 @@
 const { Parser } = require('./Parser');
 
+/*
+const CR = '\r'; // '\x0D'
+const LF = '\n'; // '\x0A'
+const START = '^';
+const COMMA = ',';
+const DQUOTE = '"';
+const CHARS = '[\x20-\xFE]';
+const TEXTDATA = '(?:(?![' . DQUOTE . COMMA . '\x7F' . '])' . CHARS . ')';
+
+const CRLF = CR . LF;
+const CR_NOT_LF = CR . '(?!' . LF . ')';
+const EOL = CRLF . '|' . CR . '|' . LF;
+const DOUBLE_DQUOTE = DQUOTE . '{2}';
+
+const NON_ESCAPED = '(?:' . CR_NOT_LF . '|' . LF . '|' .TEXTDATA . ')' . '+';
+const ESCAPED = DQUOTE . '(?:' . DOUBLE_DQUOTE . '|' . TEXTDATA . '|' .  COMMA . '|' . CR . '|' . LF . ')*' . DQUOTE;
+
+const HEAD = '(?:' . CRLF . '|' . COMMA . '|' . START . ')';
+const TAIL = '(?:' . DQUOTE . '|' . CR_NOT_LF . '|[^' . CR . COMMA . '])*';
+const BODY = '(?:' . ESCAPED . '|' . NON_ESCAPED . '|)';
+
+const CSV_PATTERN = '/(?:' . HEAD . ')(?:' . BODY . ')(?:' . TAIL . ')/x';
+const RECORD_PATTERN = '/^(' . HEAD . ')(' . BODY . ')(' . TAIL . ')$/x';
+
+const SIGN = '[+-]?';
+const DIGITS = '[0-9]+';
+const INT_PATTERN = '/^' . SIGN . DIGITS . '$/';
+const FLOAT_PATTERN = '/^' . SIGN . DIGITS . '\.' . DIGITS . '$/';
+
+const EMPTY_PATTERN = '/^$/';
+const OUTER_QUOTES = '/^"|"$/';
+const INNER_QUOTES = '/""/';
+
+*/
+
 const CR = '\x0D'; // '\x0D' == '\r'
 const LF = '\x0A'; // '\x0A' == '\n'
-const START_OF_LINE = '^';
-const COMMA = '\x2C'; // '\x2C' == ','
+const START = '^';
 const DQUOTE = '\x22'; // '\x22' == '"'
-const TEXTDATA = '[\x20-!#-+--~]'; // '\x20' == ' '
+const COMMA = '\x2C'; // '\x2C' == ','
+const CHARS = '[\x20-\xFE]';
+const TEXTDATA = `(?:(?!['${DQUOTE}${COMMA}\x7F])${CHARS})`; // '\x7F' == DEL
 
-const SEPARATOR = `${CR}${LF}|${COMMA}|${START_OF_LINE}`;
+const CRLF = `${CR}${LF}`;
+const CR_NOT_LF = `${CR}(?!${LF})`;
+const EOL = `${CRLF}$`;
 const DOUBLE_DQUOTE = `${DQUOTE}{2}`;
 
-const NON_ESCAPED = `${TEXTDATA}+`;
+const NON_ESCAPED = `(?:${CR_NOT_LF}|${LF}|${TEXTDATA})+`;
 const ESCAPED = `${DQUOTE}(?:${DOUBLE_DQUOTE}|${TEXTDATA}|${COMMA}|${CR}|${LF})*${DQUOTE}`;
-const CORRUPTED_TAIL = `(?:${DQUOTE}|${CR}(?!${LF})|[^${DQUOTE}${COMMA}])*`;
 
-const CSV_PATTERN = `(${SEPARATOR})(${ESCAPED}|${NON_ESCAPED}|)(${CORRUPTED_TAIL})`;
+const HEAD = `(?:${CRLF}|${COMMA}|${START})`;
+const TAIL = `(?:${DQUOTE}|${CR_NOT_LF}|[^${CR}${COMMA}])*`;
+const BODY = `(?:${ESCAPED}|${NON_ESCAPED}|)`;
 
-const csvRegexp = new RegExp(CSV_PATTERN, 'g');
+const CSV_PATTERN = `(?:${HEAD})(?:${BODY})(?:${TAIL})`;
+const RECORD_PATTERN = `^(${HEAD})(${BODY})(${TAIL})$`;
 
-const lastEol = new RegExp(`${CR}${LF}|${CR}|${LF}$`);
-const rOuterQuotes = /^"|"$/g;
-const rInnerQuotes = /""/g;
-const rEmptyValue = /^$/;
+const SIGN = '[+-]?';
+const DIGITS = '[0-9]+';
+const INT_PATTERN = `/^${SIGN}${DIGITS}$/`;
+const FLOAT_PATTERN = `/^${SIGN}${DIGITS}\.${DIGITS}$/`;
+
+const EMPTY_PATTERN = '^$';
+const OUTER_QUOTES = `^${DQUOTE}|${DQUOTE}$`;
+const INNER_QUOTES = DOUBLE_DQUOTE;
+
+
+const csvPattern = new RegExp(CSV_PATTERN, 'g');
+
+const replaceNl = new RegExp(`(${CR})|(${LF})`, 'g');
+
+const lastEol = new RegExp(EOL);
+const outerQuotesPattern = new RegExp(OUTER_QUOTES, 'g');
+const innerQuotesPattern = new RegExp(INNER_QUOTES, 'g');
+const emptyValuePattern = new RegExp(EMPTY_PATTERN, 'g');
 
 const allowedProperties = ['withHeader', 'withNull'];
 
-function tokenize(inputStr) {
-  // eslint-disable-next-line quotes
-  // const data = `\n${csv.trim()}`;
-  const str = inputStr.replace(lastEol, '');
-  if (str === '') {
-    return [csvRegexp.exec(str)];
+function splitTokenToParts(token) {
+  const recPattern = new RegExp(RECORD_PATTERN, 'g');
+  const headPattern = new RegExp(HEAD, 'g');
+  const bodyPattern = new RegExp(`${HEAD}${BODY}`, 'g');
+  const strings = recPattern.exec(token[0]);
+  headPattern.exec(token[0]);
+  bodyPattern.exec(token[0]);
+  const parts = [
+    [strings[0], token[1]],
+    [strings[1], 0],
+    [strings[2], headPattern.lastIndex],
+    [strings[3], bodyPattern.lastIndex],
+  ];
+  return parts;
+}
+
+
+function replacer(match) {
+  if (match === '\r') {
+    return '\\r';
   }
+  return '\\n';
+}
+
+function tokenize(inputStr) {
+  const str = `\r\n${inputStr.replace(lastEol, '')}`;
   const tokens = [];
   let token;
+  let index = 0;
   do {
-    token = csvRegexp.exec(str);
+    token = csvPattern.exec(str);
     if (token !== null) {
-      tokens.push(token);
+      token.push(index);
+      index = csvPattern.lastIndex;
+      const parts = splitTokenToParts(token);
+      tokens.push(parts);
     }
   } while (token !== null);
   return tokens;
@@ -50,11 +127,11 @@ function convertValue(value, withNull) {
     }
     return Number.parseInt(value, 10);
   }
-  if (withNull && rEmptyValue.test(value)) {
+  if (withNull && emptyValuePattern.test(value)) {
     return null;
   }
-  const newValue = value.replace(rOuterQuotes, '');
-  return newValue.replace(rInnerQuotes, '"');
+  const newValue = value.replace(outerQuotesPattern, '');
+  return newValue.replace(innerQuotesPattern, '"');
 }
 
 function tokensToDataTree(tokens, privateProperties) {
@@ -63,39 +140,51 @@ function tokensToDataTree(tokens, privateProperties) {
   const { withHeader, withNull } = privateProperties;
   const branch = withHeader ? 'header' : 'first record';
   tokens.forEach((token) => {
-    if (token[3] !== '') {
-      throw new SyntaxError(`Corrupted field '${token[2]}${token[3]}' starting at ${token.index + token[1].length} character!`);
-    }
-    if (token[1] !== ',') {
+    if (token[1][0] !== ',') {
       if (records.length > 1 && records[records.length - 1].length < records[0].length) {
-        throw new RangeError(`Error occured before field '${token[2]}${token[3]}' started at ${token.index + token[1].length} character: last record has less fields than ${branch}!`);
+        throw new RangeError(`Record ${records.length} has less fields than ${branch}!`);
       }
       records.push([]);
       fieldNo = 1;
     }
-
+    if (token[3][0] !== '') {
+      const fieldStr = replaceNl[Symbol.replace](token[0][0], replacer);
+      const endStr = replaceNl[Symbol.replace](token[3][0], replacer);
+      throw new SyntaxError(
+        `Record ${records.length}, field ${fieldNo}: '${fieldStr}' has corrupted end '${endStr}' at position ${token[3][1]}!`,
+      );
+    }
     if (records.length > 1) {
       if (fieldNo > records[0].length) {
-        throw new RangeError(`Index of curent field '${token[2]}${token[3]}' started at ${token.index + token[1].length} character is greater then number of fields in ${branch}!`);
+        throw new RangeError(`Record ${records.length} has more fields than ${branch}!`);
       }
     }
 
-    const value = convertValue(token[2], withNull);
+    const value = convertValue(token[2][0], withNull);
     records[records.length - 1].push(value);
     fieldNo += 1;
   });
 
   if (records[records.length - 1].length < records[0].length) {
-    throw new RangeError(`Last record has less fields than ${branch}!`);
+    throw new RangeError(`Record ${records.length} has less fields than ${branch}!`);
   }
 
   const tree = {};
   if (withHeader) {
     tree.header = records.shift();
+    tree.header.forEach((fieldName, index) => {
+      if (fieldName === '') {
+        throw new SyntaxError(`Header of field ${index} is empty!`);
+      }
+      if (fieldName === null) {
+        throw new SyntaxError(`Header of field ${index} is null!`);
+      }
+    });
   }
   if (records.length > 0) {
     tree.records = records;
   }
+  
   return tree;
 }
 
