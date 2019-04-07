@@ -191,9 +191,6 @@ zzz,,""\r
       });
     });
     describe('throws error:', () => {
-      const withHeader = true;
-      const branch = withHeader ? 'header' : 'first record';
-      // const csvParser = CsvParser();
       const csvParser = CsvParser({ withHeader: true, withNull: true });
       it('when called without argument', () => {
         expect(() => csvParser.makeDataTree()).to.throw(
@@ -203,47 +200,46 @@ zzz,,""\r
       });
       const testDataList = [
         {
-          it: `when record has less fields than ${branch}`,
+          it: 'when record has less fields than first record',
           csv: 'a,b,c\r\nzzz,""\r\n,,',
           errorClass: RangeError,
-          message: `Record 2 has less fields than ${branch}!`,
+          message: 'Record 1 has less fields than first record!',
         },
         {
-          it: `when last record has less fields than ${branch}`,
+          it: 'when last record has less fields than first record',
           csv: 'a,b,c\r\nzzz,,""\r\n,',
           errorClass: RangeError,
-          message: `Record 3 has less fields than ${branch}!`,
+          message: 'Record 2 has less fields than first record!',
         },
         {
-          it: `when record has more fields than ${branch}`,
+          it: 'when record has more fields than first record',
           csv: 'a,b,c\r\nzzz,,,""\r\n,,',
           errorClass: RangeError,
-          message: `Record 2 has more fields than ${branch}!`,
+          message: 'Record 1 has more fields than first record!',
         },
         {
           it: 'when non-escaped field has double quote',
           csv: 'a,b,c\r\nzzz,","\r"\r\n,,',
           errorClass: SyntaxError,
-          message: 'Record 2, field 2: \',","\\r"\' has corrupted end \'\\r"\' at position 4!',
+          message: 'Record 1, field 1: \',","\\r"\' has corrupted end \'\\r"\' at position 4!',
         },
         {
           it: 'when escaped field has extra characters after double quote',
           csv: 'a,b,c\r\nzzz,,""\nabc\r\n,,',
           errorClass: SyntaxError,
-          message: 'Record 2, field 3: \',""\\nabc\' has corrupted end \'\\nabc\' at position 3!',
+          message: 'Record 1, field 2: \',""\\nabc\' has corrupted end \'\\nabc\' at position 3!',
         },
         {
-          it: 'when #withHeader and #withNull are true and field of header is null',
-          csv: ',b,c\r\nzzz,,""\r\n,,',
-          errorClass: SyntaxError,
-          message: 'Header of field 0 is null!',
-        },
-        {
-          it: 'when #withHeader is true, #withNull is false and field of header is empty',
-          parameters: { withNull: false },
+          it: 'when field of header is empty',
           csv: ',b,c\r\nzzz,,""\r\n,,',
           errorClass: SyntaxError,
           message: 'Header of field 0 is empty!',
+        },
+        {
+          it: 'when field of header is escaped empty string',
+          csv: '"",b,c\r\nzzz,,""\r\n,,',
+          errorClass: SyntaxError,
+          message: 'Header of field 0 is escaped empty string!',
         },
       ];
       testDataList.forEach(testData => it(
