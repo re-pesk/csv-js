@@ -58,11 +58,6 @@ const BODY = `(?:${ESCAPED}|${NON_ESCAPED}|)`;
 const CSV_PATTERN = `(?:${HEAD})(?:${BODY})(?:${TAIL})`;
 const RECORD_PATTERN = `^(${HEAD})(${BODY})(${TAIL})$`;
 
-const SIGN = '[+-]?';
-const DIGITS = '[0-9]+';
-const INT_PATTERN = `/^${SIGN}${DIGITS}$/`;
-const FLOAT_PATTERN = `/^${SIGN}${DIGITS}\.${DIGITS}$/`;
-
 const EMPTY_PATTERN = '^$';
 const OUTER_QUOTES = `^${DQUOTE}|${DQUOTE}$`;
 const INNER_QUOTES = DOUBLE_DQUOTE;
