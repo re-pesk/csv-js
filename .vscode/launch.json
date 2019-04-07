@@ -7,33 +7,36 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch index.js",
-            "program": "${workspaceFolder}/index.js"
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "Mocha All",
-            "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-            "args": [
-                "--timeout",
-                "999999",
-                "--colors",
-                "${workspaceFolder}/test"
-            ],
-            "console": "integratedTerminal",
-            "internalConsoleOptions": "neverOpen"
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "Debug",
+            "name": "Debug App",
             "program": "${workspaceFolder}/index.js",
             "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/babel-node",
+            "cwd": "${workspaceFolder}",
             "runtimeArgs": ["--nolazy"],
             "env": {
               "BABEL_ENV": "debug"
             },
+        },
+        {
+            "name": "Debug Tests",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceRoot}",
+            "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+            "args": [
+             "./{,!(node_modules)/**/}*.test.js",
+                "--require", "@babel/register",
+                "-u", "tdd",
+                "--timeout", "999999",
+                "--colors"
+            ],
+            "runtimeArgs": [
+                "--nolazy"
+            ],
+            "env": {
+                "NODE_ENV": "testing",
+                "BABEL_ENV": "debug"
+            },
+            "sourceMaps": true,
         }
     ]
 }

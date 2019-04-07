@@ -1,7 +1,7 @@
-const { describe, it } = require('mocha');
-const { expect } = require('chai');
-const { Parser } = require('../src/Parser');
-const { CsvParser } = require('../src/CsvParser');
+import { describe, it } from 'mocha';
+import { expect } from 'chai';
+import { Parser } from '../src/Parser';
+import { CsvParser } from '../src/CsvParser';
 
 describe('CsvParser', () => {
   describe('() - calling without arguments:', () => {

@@ -4,6 +4,7 @@ function Converter() {
   throw new TypeError('Cannot construct instances of Converter directly');
 }
 
-module.exports = {
+export {
+  // eslint-disable-next-line import/prefer-default-export
   Converter,
 };

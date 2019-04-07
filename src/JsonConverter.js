@@ -1,4 +1,4 @@
-const { Converter } = require('./Converter');
+import { Converter } from './Converter';
 
 function setReplacer(value, privateProperties) {
   if (!['function', 'undefined'].includes(typeof value) && value !== null && !Array.isArray(value)) {
@@ -67,4 +67,5 @@ function JsonConverter(properties = {}) {
   return jsonConverter;
 }
 
-module.exports = { JsonConverter };
+// eslint-disable-next-line import/prefer-default-export
+export { JsonConverter };

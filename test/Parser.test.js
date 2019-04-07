@@ -1,6 +1,6 @@
-const { describe, it } = require('mocha');
-const { expect } = require('chai');
-const { Parser } = require('../src/Parser');
+import { describe, it } from 'mocha';
+import { expect } from 'chai';
+import { Parser } from '../src/Parser';
 
 describe('Parser', () => {
   describe('()', () => {

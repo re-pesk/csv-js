@@ -1,4 +1,4 @@
-const { Parser } = require('./Parser');
+import { Parser } from './Parser';
 
 const CR = '\x0D'; // '\x0D' == '\r'
 const LF = '\x0A'; // '\x0A' == '\n'
@@ -227,4 +227,5 @@ function CsvParser(properties = {}) {
   return csvParser;
 }
 
-module.exports = { CsvParser };
+// eslint-disable-next-line import/prefer-default-export
+export { CsvParser };

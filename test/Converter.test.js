@@ -1,6 +1,6 @@
-const { describe, it } = require('mocha');
-const { expect } = require('chai');
-const { Converter } = require('../src/Converter');
+import { describe, it } from 'mocha';
+import { expect } from 'chai';
+import { Converter } from '../src/Converter';
 
 describe('Converter', () => {
   describe('()', () => {

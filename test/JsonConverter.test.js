@@ -1,8 +1,7 @@
-/* eslint-disable no-unused-expressions */
-const { describe, it } = require('mocha');
-const { expect } = require('chai');
-const { Converter } = require('../src/Converter');
-const { JsonConverter } = require('../src/JsonConverter');
+import { describe, it } from 'mocha';
+import { expect } from 'chai';
+import { Converter } from '../src/Converter';
+import { JsonConverter } from '../src/JsonConverter';
 
 describe('JsonConverter', () => {
   describe('() - calling without arguments:', () => {
@@ -127,7 +126,7 @@ describe('JsonConverter', () => {
   describe('#convert', () => {
     const jsonConverter = JsonConverter();
     it('called without argument returns undefined', () => {
-      expect(jsonConverter.convert()).to.be.undefined;
+      expect(jsonConverter.convert()).to.equal(undefined);
     });
     describe('returns appropriate string:', () => {
       const tree = {
