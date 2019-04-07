@@ -57,6 +57,7 @@ const BODY = `(?:${ESCAPED}|${NON_ESCAPED}|)`;
 
 const CSV_PATTERN = `(?:${HEAD})(?:${BODY})(?:${TAIL})`;
 const RECORD_PATTERN = `^(${HEAD})(${BODY})(${TAIL})$`;
+const RECORDS = `(${HEAD})(${BODY})(${TAIL})`;
 
 const EMPTY_PATTERN = '^$';
 const OUTER_QUOTES = `^${DQUOTE}|${DQUOTE}$`;
@@ -129,66 +130,84 @@ function convertValue(value, withNull) {
   return newValue.replace(innerQuotesPattern, '"');
 }
 
-function tokensToDataTree(tokens, privateProperties) {
-  const records = [];
-  let fieldNo = 0;
-  const { withHeader, withNull } = privateProperties;
-  const branch = withHeader ? 'header' : 'first record';
-  tokens.forEach((token) => {
-    if (token[1][0] !== ',') {
-      if (records.length > 1 && records[records.length - 1].length < records[0].length) {
-        throw new RangeError(`Record ${records.length} has less fields than ${branch}!`);
-      }
-      records.push([]);
-      fieldNo = 1;
-    }
-    if (token[3][0] !== '') {
-      const fieldStr = replaceNl[Symbol.replace](token[0][0], replacer);
-      const endStr = replaceNl[Symbol.replace](token[3][0], replacer);
-      throw new SyntaxError(
-        `Record ${records.length}, field ${fieldNo}: '${fieldStr}' has corrupted end '${endStr}' at position ${token[3][1]}!`,
-      );
-    }
-    if (records.length > 1) {
-      if (fieldNo > records[0].length) {
-        throw new RangeError(`Record ${records.length} has more fields than ${branch}!`);
-      }
-    }
+function checkRecords(records, privateProperties) {
+  const { withHeader } = privateProperties;
+  const fieldCount = records[0].length;
 
-    const value = convertValue(token[2][0], withNull);
-    records[records.length - 1].push(value);
-    fieldNo += 1;
-  });
-
-  if (records[records.length - 1].length < records[0].length) {
-    throw new RangeError(`Record ${records.length} has less fields than ${branch}!`);
-  }
-
-  const tree = {};
-  if (withHeader) {
-    tree.header = records.shift();
-    tree.header.forEach((fieldName, index) => {
-      if (fieldName === '') {
-        throw new SyntaxError(`Header of field ${index} is empty!`);
-      }
-      if (fieldName === null) {
-        throw new SyntaxError(`Header of field ${index} is null!`);
+  records.forEach((record, recordNo) => {
+    record.forEach((field, fieldNo) => {
+      if (field[3][0] !== '') {
+        const fieldStr = replaceNl[Symbol.replace](field[0][0], replacer);
+        const endStr = replaceNl[Symbol.replace](field[3][0], replacer);
+        throw new SyntaxError(
+          `Record ${recordNo}, field ${fieldNo}: '${fieldStr}' has corrupted end '${endStr}' at position ${field[3][1]}!`,
+        );
       }
     });
+    if (withHeader && recordNo < 1) {
+      records[0].forEach((fieldName, index) => {
+        if (fieldName[2][0] === '') {
+          throw new SyntaxError(`Header of field ${index} is empty!`);
+        }
+        if (fieldName[2][0] === '""') {
+          throw new SyntaxError(`Header of field ${index} is escaped empty string!`);
+        }
+      });
+    }
+    if (recordNo > 0) {
+      const currentFieldCount = record.length;
+      if (currentFieldCount > fieldCount) {
+        throw new RangeError(`Record ${recordNo} has more fields than first record!`);
+      } else if (currentFieldCount < fieldCount) {
+        throw new RangeError(`Record ${recordNo} has less fields than first record!`);
+      }
+    }
+  });
+  return true;
+};
+
+function tokensToRecords(tokens) {
+  const records = [];
+
+  tokens.forEach((token) => {
+    if (token[1][0] !== ',') {
+      records.push([token]);
+    } else {
+      records[records.length - 1].push(token);
+    }
+  });
+
+  return records;
+}
+
+function recordsToDataTree(records, privateProperties) {
+  const { withHeader, withNull } = privateProperties;
+  const dataRecords = records.map(
+    record => record.map(field => convertValue(field[2][0], withNull)),
+  );
+  const tree = {};
+  if (withHeader) {
+    tree.header = dataRecords.shift();
   }
-  if (records.length > 0) {
-    tree.records = records;
+  if (dataRecords.length > 0) {
+    tree.records = dataRecords;
   }
-  
   return tree;
 }
 
-function makeDataTree(data, privateProperties) {
-  if (typeof data !== 'string') {
+function makeRecords(str, privateProperties) {
+  const tokens = tokenize(str);
+  const records = tokensToRecords(tokens);
+  checkRecords(records, privateProperties);
+  return records;
+}
+
+function makeDataTree(str, privateProperties) {
+  if (typeof str !== 'string') {
     throw TypeError('Value of argument must be string.');
   }
-  const tokens = tokenize(data);
-  const dataTree = tokensToDataTree(tokens, privateProperties);
+  const records = makeRecords(str, privateProperties);
+  const dataTree = recordsToDataTree(records, privateProperties);
   return dataTree;
 }
 
@@ -244,4 +263,4 @@ function CsvParser(properties = {}) {
   return csvParser;
 }
 
-module.exports = { CsvParser };
+module.exports = { CsvParser, RECORDS };
