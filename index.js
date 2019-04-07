@@ -12,11 +12,12 @@ PAT.forEach((pattern) => {
   const re = new RegExp(pattern);
   const token = str.match(re);
   tokens.push(token);
+  console.log('token =>', token[0], 'index =>', token.index, '\n\n');
 });
 
 const match = 'abc,bcd,xyz+-\nbcd,cde,xxx=!'.match(new RegExp(PAT));
 
-console.log('match =>', match);
+console.log('match =>', match, '\n\n');
 
 function testList() {
   const csvList = {

@@ -16,8 +16,10 @@ describe('JsonConverter', () => {
         expect(jsonConverter).to.have.property('outputType', 'json');
       });
       it('is not writable', () => {
-        jsonConverter.outputType = 'abc';
         expect(jsonConverter).to.have.property('outputType', 'json');
+        expect(() => { jsonConverter.outputType = 'abc'; }).to.throw(
+          TypeError, 'Cannot assign to read only property \'outputType\' of object \'#<Converter>\'',
+        );
       });
     });
     describe('#replacer', () => {

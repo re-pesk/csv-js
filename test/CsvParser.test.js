@@ -15,8 +15,10 @@ describe('CsvParser', () => {
         expect(csvParser).to.have.property('inputType', 'csv');
       });
       it('The property is not writable', () => {
-        csvParser.inputType = 'abc';
         expect(csvParser).to.have.property('inputType', 'csv');
+        expect(() => { csvParser.inputType = 'abc'; }).to.throw(
+          TypeError, 'Cannot assign to read only property \'inputType\' of object \'#<Parser>\'',
+        );
       });
     });
     describe('#withHeader', () => {
