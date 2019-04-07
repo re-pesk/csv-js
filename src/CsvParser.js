@@ -109,7 +109,7 @@ function checkRecords(records, privateProperties) {
       }
     });
     if (withHeader && recordNo < 1) {
-      records[0].forEach((fieldName, index) => {
+      record.forEach((fieldName, index) => {
         if (fieldName[2][0] === '') {
           throw new SyntaxError(`Header of field ${index} is empty!`);
         }
