@@ -1,5 +1,22 @@
-const { CsvParser } = require('./src/CsvParser');
-const { JsonConverter } = require('./src/JsonConverter');
+import { CsvParser } from './src/CsvParser';
+import { JsonConverter } from './src/JsonConverter';
+
+// const PAT = '(\\r|\\n|,|^)([\\w]*)([^\\r\\n,]*)';
+
+const PAT = ['\\r|\\n|,|^', '[\\w]*', '[^\\r\\n,]*'];
+
+const tokens = [];
+const str = 'abc,bcd,xyz+-\nbcd,cde,xxx=!';
+
+PAT.forEach((pattern) => {
+  const re = new RegExp(pattern);
+  const token = str.match(re);
+  tokens.push(token);
+});
+
+const match = 'abc,bcd,xyz+-\nbcd,cde,xxx=!'.match(new RegExp(PAT));
+
+console.log('match =>', match);
 
 function testList() {
   const csvList = {
