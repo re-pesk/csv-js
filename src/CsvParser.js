@@ -263,4 +263,4 @@ function CsvParser(properties = {}) {
   return csvParser;
 }
 
-module.exports = { CsvParser, RECORDS };
+module.exports = { CsvParser };
