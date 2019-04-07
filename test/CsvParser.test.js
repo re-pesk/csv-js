@@ -261,7 +261,7 @@ zzz,,""\r
             () => {
               csvParser.makeDataTree(testData.csv);
             },
-          ).to.throw(testData.errorClass, testData.message); 
+          ).to.throw(testData.errorClass, testData.message);
         },
       ));
     });

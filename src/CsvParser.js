@@ -1,40 +1,5 @@
 const { Parser } = require('./Parser');
 
-/*
-const CR = '\r'; // '\x0D'
-const LF = '\n'; // '\x0A'
-const START = '^';
-const COMMA = ',';
-const DQUOTE = '"';
-const CHARS = '[\x20-\xFE]';
-const TEXTDATA = '(?:(?![' . DQUOTE . COMMA . '\x7F' . '])' . CHARS . ')';
-
-const CRLF = CR . LF;
-const CR_NOT_LF = CR . '(?!' . LF . ')';
-const EOL = CRLF . '|' . CR . '|' . LF;
-const DOUBLE_DQUOTE = DQUOTE . '{2}';
-
-const NON_ESCAPED = '(?:' . CR_NOT_LF . '|' . LF . '|' .TEXTDATA . ')' . '+';
-const ESCAPED = DQUOTE . '(?:' . DOUBLE_DQUOTE . '|' . TEXTDATA . '|' .  COMMA . '|' . CR . '|' . LF . ')*' . DQUOTE;
-
-const HEAD = '(?:' . CRLF . '|' . COMMA . '|' . START . ')';
-const TAIL = '(?:' . DQUOTE . '|' . CR_NOT_LF . '|[^' . CR . COMMA . '])*';
-const BODY = '(?:' . ESCAPED . '|' . NON_ESCAPED . '|)';
-
-const CSV_PATTERN = '/(?:' . HEAD . ')(?:' . BODY . ')(?:' . TAIL . ')/x';
-const RECORD_PATTERN = '/^(' . HEAD . ')(' . BODY . ')(' . TAIL . ')$/x';
-
-const SIGN = '[+-]?';
-const DIGITS = '[0-9]+';
-const INT_PATTERN = '/^' . SIGN . DIGITS . '$/';
-const FLOAT_PATTERN = '/^' . SIGN . DIGITS . '\.' . DIGITS . '$/';
-
-const EMPTY_PATTERN = '/^$/';
-const OUTER_QUOTES = '/^"|"$/';
-const INNER_QUOTES = '/""/';
-
-*/
-
 const CR = '\x0D'; // '\x0D' == '\r'
 const LF = '\x0A'; // '\x0A' == '\n'
 const START = '^';
@@ -57,7 +22,6 @@ const BODY = `(?:${ESCAPED}|${NON_ESCAPED}|)`;
 
 const CSV_PATTERN = `(?:${HEAD})(?:${BODY})(?:${TAIL})`;
 const RECORD_PATTERN = `^(${HEAD})(${BODY})(${TAIL})$`;
-const RECORDS = `(${HEAD})(${BODY})(${TAIL})`;
 
 const EMPTY_PATTERN = '^$';
 const OUTER_QUOTES = `^${DQUOTE}|${DQUOTE}$`;
@@ -164,7 +128,7 @@ function checkRecords(records, privateProperties) {
     }
   });
   return true;
-};
+}
 
 function tokensToRecords(tokens) {
   const records = [];

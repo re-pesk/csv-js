@@ -1,10 +1,6 @@
 const { CsvParser } = require('./src/CsvParser');
 const { JsonConverter } = require('./src/JsonConverter');
 
-// const re = /quick\s(brown).+?(jumps)/ig;
-// const result = re.exec('The Quick Brown Fox Jumps Over The Lazy Dog');
-
-
 function testList() {
   const csvList = {
     0: 'a,b,c\r\nzzz,,""\r\n,,',
@@ -30,18 +26,18 @@ function testList() {
   });
 }
 
-// testList();
+testList();
 
-// const csv = `field_name_1,"Field\r
-// Name 2",field_name_3 \r
-// "aaa","b \r
-// ,bb","ccc""ddd"\r
-// zzz,,""\r
-// 1,2.2,\r
-// ,3,\r
-// `;
+const csv = `field_name_1,"Field\r
+Name 2",field_name_3 \r
+"aaa","b \r
+,bb","ccc""ddd"\r
+zzz,,""\r
+1,2.2,\r
+,3,\r
+`;
 
-const csv = ',b,c\r\nzzz,,""\r\n,,';
+// const csv = ',b,c\r\nzzz,,""\r\n,,';
 const csvParser = CsvParser({ withHeader: true });
 const jsonConverter = new JsonConverter();
 const tree = csvParser.makeDataTree(csv);
