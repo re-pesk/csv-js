@@ -233,7 +233,7 @@ function CsvParser(properties = {}) {
   return Object.seal({
     get parameters() { return privateProperties; },
     set parameters(newProperties) { setProperties(newProperties); },
-    makeRecords(csv) { return makeRecords(csv, privateProperties); },
+    makeRecords(csv) { return makeRecords(csv); },
     checkRecords(records) { return checkRecords(records, privateProperties); },
     recordsToDataTree(records) { return recordsToDataTree(records, privateProperties); },
     makeDataTree(csv) { return makeDataTree(csv, privateProperties); },

@@ -283,14 +283,12 @@ zzz,,""\r
   describe('#makeRecords', () => {
     describe('returns appropriate data tree:', () => {
       const csvParser = CsvParser();
-      it('when input is empty string and #withHeader is false', () => {
+      it('when input is empty string', () => {
         const csv = '';
-        expect(csvParser.parameters.withHeader).to.equal(false);
         expect(csvParser.makeRecords(csv)).to.deep.equal([[[['', 0], ['', 0], ['', 0], ['', 0]]]]);
       });
-      it('when input is csv string and #withHeader is false', () => {
+      it('when input is csv string', () => {
         const csv = 'abc,bcd,12+-\r\nbcd,,xxx=!';
-        expect(csvParser.parameters.withHeader).to.equal(false);
         const result = [
           [[['abc', 0], ['', 0], ['abc', 0], ['', 3]],
             [[',bcd', 3], [',', 0], ['bcd', 1], ['', 4]],
@@ -311,21 +309,21 @@ zzz,,""\r
       it('when parameter #withEmptyLine is false', () => {
         const records = [
           [
-            [["abc",0],["",0],["abc",0],["",3]],
-            [[",bcd",3],[",",0],["bcd",1],["",4]],
-            [[",12+-",7],[",",0],["12+-",1],["",5]]
+            [['abc', 0], ['', 0], ['abc', 0], ['', 3]],
+            [[',bcd', 3], [',', 0], ['bcd', 1], ['', 4]],
+            [[',12+-', 7], [',', 0], ['12+-', 1], ['', 5]],
           ],
           [
-            [["\r\nbcd",12],["\r\n",0],["bcd",2],["",5]],
-            [[",",17],[",",0],["",1],["",1]],
-            [[",xxx=!",18],[",",0],["xxx=!",1],["",6]]
+            [['\r\nbcd', 12], ['\r\n', 0], ['bcd', 2], ['', 5]],
+            [[',', 17], [',', 0], ['', 1], ['', 1]],
+            [[',xxx=!', 18], [',', 0], ['xxx=!', 1], ['', 6]],
           ],
           [
-            [["\r\n",24],["\r\n",0],["",2],["",2]]
-          ]
+            [['\r\n', 24], ['\r\n', 0], ['', 2], ['', 2]],
+          ],
         ];
-        expect(csvParser.parameters.withHeader).to.equal(false);
-        expect(csvParser.makeRecords(csv)).to.deep.equal([[[['', 0], ['', 0], ['', 0], ['', 0]]]]);
+        expect(csvParser.parameters.withEmptyLine).to.equal(false);
+        expect(() => csvParser.checkRecords(records)).to.throw(RangeError, 'Record 2 has less fields than first record!');
       });
       it('when input is csv string and #withHeader is false', () => {
         const csv = 'abc,bcd,12+-\r\nbcd,,xxx=!';
