@@ -158,7 +158,7 @@ function tokensToRecords(tokens) {
 }
 
 function recordsToDataTree(records, privateProperties) {
-  const { withHeader, withNull, withEmptyLine } = privateProperties;
+  const { withHeader, withNull, withNumbers, withEmptyLine } = privateProperties;
   let filteredRecords = records;
   if (!withEmptyLine) {
     filteredRecords = records.filter((record, recordNo) => {
@@ -169,7 +169,7 @@ function recordsToDataTree(records, privateProperties) {
     });
   }
   const dataRecords = filteredRecords.map(
-    record => record.map(field => convertValue(field[2][0], withNull)),
+    record => record.map(field => convertValue(field[2][0], withNull, withNumbers)),
   );
   const tree = {};
   if (withHeader) {
