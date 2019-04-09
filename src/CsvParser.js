@@ -81,6 +81,7 @@ function tokenize(inputStr) {
 }
 
 function convertValue(value, withNull, withNumbers) {
+  const isNaN = Number.isNaN(Number.parseFloat(value));
   if (withNumbers && !Number.isNaN(Number.parseFloat(value))) {
     if (value.indexOf('.') !== -1) {
       return Number.parseFloat(value);
@@ -197,16 +198,9 @@ function makeDataTree(str, privateProperties) {
   return dataTree;
 }
 
-const allowedProperties = {
-  withHeader: false,
-  withNull: false,
-  withNumbers: false,
-  withEmptyLine: false,
-};
-
-function checkProperties(properties) {
+function checkProperties(properties, privateProperties) {
   Object.getOwnPropertyNames(properties).forEach((name) => {
-    if (!Object.getOwnPropertyNames(allowedProperties).includes(name)) {
+    if (!Object.getOwnPropertyNames(privateProperties).includes(name)) {
       throw new TypeError(`"${name}" is not a name of property.`);
     }
     if (!['boolean', 'undefined'].includes(typeof properties[name]) && properties[name] !== null) {
@@ -219,10 +213,15 @@ function checkProperties(properties) {
 
 // Constructor
 function CsvParser(properties = {}) {
-  const privateProperties = Object.seal(allowedProperties);
+  const privateProperties = Object.seal({
+    withHeader: false,
+    withNull: false,
+    withNumbers: false,
+    withEmptyLine: false,
+  });
 
   function setProperties(_properties) {
-    checkProperties(_properties);
+    checkProperties(_properties, privateProperties);
     const names = Object.getOwnPropertyNames(_properties);
     names.forEach((name) => {
       privateProperties[name] = _properties[name] || false;
