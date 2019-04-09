@@ -9,8 +9,8 @@ import { CsvParser } from './src/CsvParser';
 // 1,2.2,\r
 // ,3,\r
 // `;
-const csv = '"abc",bcd,12+-\r\n"bcd,,xxx=!\r\n';
-const csvParser = CsvParser({ withEmptyLine: true });
+const csv = '"abc",bcd,12+-\r\n"bcd",,xxx=!\r\n';
+const csvParser = CsvParser({ withEmptyLine: false });
 console.log(csvParser.parameters);
 const records = csvParser.makeRecords(csv);
 // const records = csvParser.makeRecords('');
