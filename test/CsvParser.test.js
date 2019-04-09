@@ -1,54 +1,47 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
-import { Parser } from '../src/Parser';
 import { CsvParser } from '../src/CsvParser';
 
 describe('CsvParser', () => {
   describe('() - calling without arguments:', () => {
-    it('creates object that is instance of Parser', () => {
+    it('creates object with expected properties', () => {
       const csvParser = CsvParser();
-      expect(csvParser).to.be.an('object').itself.be.an.instanceof(Parser);
+      expect(csvParser).to.be.an('object');
+      expect(csvParser).to.have.property('makeRecords');
+      expect(csvParser).to.have.property('recordsToDataTree');
+      expect(csvParser).to.have.property('makeDataTree');
     });
-    describe('#inputType', () => {
-      const csvParser = CsvParser();
-      it('Value of the property is "csv"', () => {
-        expect(csvParser).to.have.property('inputType', 'csv');
+    describe('#parameters', () => {
+      it('Getter returns object', () => {
+        const csvParser = CsvParser();
+        expect(csvParser).to.have.property('parameters');
+        expect(csvParser.parameters).to.deep.equal({
+          withHeader: false,
+          withNull: false,
+          withNumbers: false,
+          withEmptyLine: false,
+        });
       });
-      it('The property is not writable', () => {
-        expect(csvParser).to.have.property('inputType', 'csv');
-        expect(() => { csvParser.inputType = 'abc'; }).to.throw(
-          TypeError, 'Cannot assign to read only property \'inputType\' of object \'#<Parser>\'',
-        );
+      it('Setter changes values of the parameters to true', () => {
+        const csvParser = CsvParser();
+        csvParser.parameters = {
+          withHeader: true,
+          withNull: true,
+          withNumbers: true,
+          withEmptyLine: true,
+        };
+        expect(csvParser.parameters).to.deep.equal({
+          withHeader: true,
+          withNull: true,
+          withNumbers: true,
+          withEmptyLine: true,
+        });
       });
-    });
-    describe('#withHeader', () => {
-      const csvParser = CsvParser();
-      it('Getter returns false', () => {
-        expect(csvParser).to.have.property('withHeader', false);
-      });
-      it('Setter changes value of the property to true', () => {
-        csvParser.withHeader = true;
-        expect(csvParser.withHeader).to.equal(true);
-      });
-      it('Setter throws error if new value is not boolean, undefined or null', () => {
+      it('Setter throws error if new value of parameter is not boolean, undefined or null', () => {
+        const csvParser = CsvParser();
         expect(() => {
-          csvParser.withHeader = 5;
+          csvParser.parameters = { withHeader: 5 };
         }).to.throw(TypeError, 'Value of #withHeader property must be boolean, undefined or null.');
-      });
-    });
-    describe('#withNull', () => {
-      const csvParser = CsvParser();
-      it('Getter returns false', () => {
-        expect(csvParser).to.have.property('withNull', false);
-      });
-      it('Setter changes value of the property to true', () => {
-        csvParser.withNull = true;
-        expect(csvParser.withNull).to.equal(true);
-      });
-      it('Setter throws error if new value is not boolean, undefined or null', () => {
-        expect(() => {
-          csvParser.withNull = 5;
-        }).to.throw(TypeError, 'Value of #withNull property must be boolean, undefined or null.');
       });
     });
   });
@@ -63,106 +56,126 @@ describe('CsvParser', () => {
     });
     describe('when values of arguments are undefined or null', () => {
       const csvParser = CsvParser({ withHeader: undefined, withNull: null });
-      it('creates object that is instance of Parser', () => {
-        expect(csvParser).to.be.an('object').itself.be.an.instanceof(Parser);
-      });
-      it('value of #withHeader is false', () => {
-        expect(csvParser.withHeader).to.equal(false);
-      });
-      it('value of #withNull is false', () => {
-        expect(csvParser.withNull).to.equal(false);
-      });
-    });
-    describe('when argument is { withHeader: true }', () => {
-      const csvParser = CsvParser({ withHeader: true });
-      it('creates object that is instance of Parser', () => {
-        expect(csvParser).to.be.an('object').itself.be.an.instanceof(Parser);
-      });
-      it('value of #withHeader is true', () => {
-        expect(csvParser.withHeader).to.equal(true);
-      });
-      it('value #withNull is false', () => {
-        expect(csvParser.withNull).to.equal(false);
+      it('values of each parameter are false', () => {
+        expect(csvParser.parameters).to.deep.equal({
+          withHeader: false,
+          withNull: false,
+          withNumbers: false,
+          withEmptyLine: false,
+        });
       });
     });
-    describe('when arguments are { withHeader: true, withNull: true }', () => {
-      const csvParser = CsvParser({ withHeader: true, withNull: true });
-      it('creates object that is instance of Parser', () => {
-        expect(csvParser).to.be.an('object').itself.be.an.instanceof(Parser);
+    describe('when arguments are { withHeader: true, withNull: true, withNumbers: true, withEmptyLine: true }', () => {
+      const csvParser = CsvParser({
+        withHeader: true, withNull: true, withNumbers: true, withEmptyLine: true,
       });
-      it('Value of #withHeader is true', () => {
-        expect(csvParser.withHeader).to.equal(true);
-      });
-      it('Value #withNull is true', () => {
-        expect(csvParser.withHeader).to.equal(true);
+      it('values of #withHeader, #withNull and #withNumbers are true', () => {
+        expect(csvParser.parameters).to.deep.equal({
+          withHeader: true,
+          withNull: true,
+          withNumbers: true,
+          withEmptyLine: true,
+        });
       });
     });
   });
   describe('#makeDataTree', () => {
     describe('returns appropriate data tree:', () => {
-      const csvParser = CsvParser();
       const csv = `field_name_1,"Field\r
 Name 2",field_name_3 \r
 "aaa","b \r
 ,bb","ccc""ddd"\r
 zzz,,""\r
 1,2.2,\r
-,3,\r
-`;
+,3,`;
       const testDataList = [
         {
-          it: 'when #withHeader is false and #withNull is false',
-          withHeader: false,
-          withNull: false,
+          it: 'when all parameters are false',
+          parameters: {
+            withHeader: false,
+            withNull: false,
+            withNumbers: false,
+            withEmptyLine: false,
+          },
+          tree: {
+            records: [
+              ['field_name_1', '"Field\r\nName 2"', 'field_name_3 '],
+              ['"aaa"', '"b \r\n,bb"', '"ccc""ddd"'],
+              ['zzz', '', '""'],
+              ['1', '2.2', ''],
+              ['', '3', ''],
+            ],
+          },
+        },
+        {
+          it: 'when #withHeader is true',
+          parameters: {
+            withHeader: true,
+            withNull: false,
+            withNumbers: false,
+            withEmptyLine: false,
+          },
+          tree: {
+            header: ['field_name_1', '"Field\r\nName 2"', 'field_name_3 '],
+            records: [
+              ['"aaa"', '"b \r\n,bb"', '"ccc""ddd"'],
+              ['zzz', '', '""'],
+              ['1', '2.2', ''],
+              ['', '3', ''],
+            ],
+          },
+        },
+        {
+          it: 'when #withNull is true',
+          parameters: {
+            withHeader: false,
+            withNull: true,
+            withNumbers: false,
+            withEmptyLine: false,
+          },
           tree: {
             records: [
               ['field_name_1', 'Field\r\nName 2', 'field_name_3 '],
               ['aaa', 'b \r\n,bb', 'ccc"ddd'],
-              ['zzz', '', ''],
+              ['zzz', null, ''],
+              ['1', '2.2', null],
+              [null, '3', null],
+            ],
+          },
+        },
+        {
+          it: 'when #withNumbers is true',
+          parameters: {
+            withHeader: false,
+            withNull: false,
+            withNumbers: true,
+            withEmptyLine: false,
+          },
+          tree: {
+            records: [
+              ['field_name_1', '"Field\r\nName 2"', 'field_name_3 '],
+              ['"aaa"', '"b \r\n,bb"', '"ccc""ddd"'],
+              ['zzz', '', '""'],
               [1, 2.2, ''],
               ['', 3, ''],
             ],
           },
         },
         {
-          it: 'when #withHeader is true and #withNull is false',
-          withHeader: true,
-          withNull: false,
-          tree: {
-            header: ['field_name_1', 'Field\r\nName 2', 'field_name_3 '],
-            records: [
-              ['aaa', 'b \r\n,bb', 'ccc"ddd'],
-              ['zzz', '', ''],
-              [1, 2.2, ''],
-              ['', 3, ''],
-            ],
+          it: 'when #withEmptyLine is true',
+          parameters: {
+            withHeader: false,
+            withNull: false,
+            withNumbers: false,
+            withEmptyLine: true,
           },
-        },
-        {
-          it: 'when #withHeader is false and #withNull is true',
-          withHeader: false,
-          withNull: true,
           tree: {
             records: [
-              ['field_name_1', 'Field\r\nName 2', 'field_name_3 '],
-              ['aaa', 'b \r\n,bb', 'ccc"ddd'],
-              ['zzz', null, ''],
-              [1, 2.2, null],
-              [null, 3, null],
-            ],
-          },
-        },
-        {
-          it: 'when #withHeader is true and #withNull is true',
-          withHeader: true,
-          withNull: true,
-          tree: {
-            header: ['field_name_1', 'Field\r\nName 2', 'field_name_3 '],
-            records: [
-              ['aaa', 'b \r\n,bb', 'ccc"ddd'],
-              ['zzz', null, ''],
-              [1, 2.2, null],
-              [null, 3, null],
+              ['field_name_1', '"Field\r\nName 2"', 'field_name_3 '],
+              ['"aaa"', '"b \r\n,bb"', '"ccc""ddd"'],
+              ['zzz', '', '""'],
+              ['1', '2.2', ''],
+              ['', '3', ''],
             ],
           },
         },
@@ -170,10 +183,9 @@ zzz,,""\r
       testDataList.forEach(testData => it(
         testData.it,
         () => {
-          csvParser.withHeader = testData.withHeader;
-          csvParser.withNull = testData.withNull;
-          expect(csvParser.withHeader).to.equal(testData.withHeader);
-          expect(csvParser.withNull).to.equal(testData.withNull);
+          const csvParser = CsvParser();
+          csvParser.parameters = testData.parameters;
+          expect(csvParser.parameters).to.deep.equal(testData.parameters);
           expect(csvParser.makeDataTree(csv)).to.deep.equal(testData.tree);
         },
       ));
@@ -182,14 +194,14 @@ zzz,,""\r
       const csvParser = CsvParser();
       it('when input is empty string and #withHeader is false', () => {
         const csv = '';
-        expect(csvParser.withHeader).to.equal(false);
+        expect(csvParser.parameters.withHeader).to.equal(false);
         expect(csvParser.makeDataTree(csv)).to.deep.equal({ records: [['']] });
       });
       it('when input has only record and #withHeader is true', () => {
-        const csv = 'field_name_1,"Field\\nName 2",field_name_3 ';
-        csvParser.withHeader = true;
-        expect(csvParser.withHeader).to.equal(true);
-        expect(csvParser.makeDataTree(csv)).to.deep.equal({ header: ['field_name_1', 'Field\\nName 2', 'field_name_3 '] });
+        const csv = 'field_name_1,"Field\r\nName 2",field_name_3 ';
+        csvParser.parameters = { withHeader: true };
+        expect(csvParser.parameters.withHeader).to.equal(true);
+        expect(csvParser.makeDataTree(csv)).to.deep.equal({ header: ['field_name_1', '"Field\r\nName 2"', 'field_name_3 '] });
       });
     });
     describe('throws error:', () => {
@@ -266,6 +278,70 @@ zzz,,""\r
           ).to.throw(testData.errorClass, testData.message);
         },
       ));
+    });
+  });
+  describe('#makeRecords', () => {
+    describe('returns appropriate data tree:', () => {
+      const csvParser = CsvParser();
+      it('when input is empty string and #withHeader is false', () => {
+        const csv = '';
+        expect(csvParser.parameters.withHeader).to.equal(false);
+        expect(csvParser.makeRecords(csv)).to.deep.equal([[[['', 0], ['', 0], ['', 0], ['', 0]]]]);
+      });
+      it('when input is csv string and #withHeader is false', () => {
+        const csv = 'abc,bcd,12+-\r\nbcd,,xxx=!';
+        expect(csvParser.parameters.withHeader).to.equal(false);
+        const result = [
+          [[['abc', 0], ['', 0], ['abc', 0], ['', 3]],
+            [[',bcd', 3], [',', 0], ['bcd', 1], ['', 4]],
+            [[',12+-', 7], [',', 0], ['12+-', 1], ['', 5]],
+          ],
+          [[['\r\nbcd', 12], ['\r\n', 0], ['bcd', 2], ['', 5]],
+            [[',', 17], [',', 0], ['', 1], ['', 1]],
+            [[',xxx=!', 18], [',', 0], ['xxx=!', 1], ['', 6]],
+          ],
+        ];
+        expect(csvParser.makeRecords(csv)).to.deep.equal(result);
+      });
+    });
+  });
+  describe('#checkRecords', () => {
+    describe('returns appropriate data tree:', () => {
+      const csvParser = CsvParser();
+      it('when parameter #withEmptyLine is false', () => {
+        const records = [
+          [
+            [["abc",0],["",0],["abc",0],["",3]],
+            [[",bcd",3],[",",0],["bcd",1],["",4]],
+            [[",12+-",7],[",",0],["12+-",1],["",5]]
+          ],
+          [
+            [["\r\nbcd",12],["\r\n",0],["bcd",2],["",5]],
+            [[",",17],[",",0],["",1],["",1]],
+            [[",xxx=!",18],[",",0],["xxx=!",1],["",6]]
+          ],
+          [
+            [["\r\n",24],["\r\n",0],["",2],["",2]]
+          ]
+        ];
+        expect(csvParser.parameters.withHeader).to.equal(false);
+        expect(csvParser.makeRecords(csv)).to.deep.equal([[[['', 0], ['', 0], ['', 0], ['', 0]]]]);
+      });
+      it('when input is csv string and #withHeader is false', () => {
+        const csv = 'abc,bcd,12+-\r\nbcd,,xxx=!';
+        expect(csvParser.parameters.withHeader).to.equal(false);
+        const result = [
+          [[['abc', 0], ['', 0], ['abc', 0], ['', 3]],
+            [[',bcd', 3], [',', 0], ['bcd', 1], ['', 4]],
+            [[',12+-', 7], [',', 0], ['12+-', 1], ['', 5]],
+          ],
+          [[['\r\nbcd', 12], ['\r\n', 0], ['bcd', 2], ['', 5]],
+            [[',', 17], [',', 0], ['', 1], ['', 1]],
+            [[',xxx=!', 18], [',', 0], ['xxx=!', 1], ['', 6]],
+          ],
+        ];
+        expect(csvParser.makeRecords(csv)).to.deep.equal(result);
+      });
     });
   });
 });
