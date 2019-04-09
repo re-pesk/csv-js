@@ -1,5 +1,3 @@
-import { Parser } from './Parser';
-
 const CR = '\x0D'; // '\x0D' == '\r'
 const LF = '\x0A'; // '\x0A' == '\n'
 const START = '^';
@@ -10,17 +8,19 @@ const TEXTDATA = `(?:(?!['${DQUOTE}${COMMA}\x7F])${CHARS})`; // '\x7F' == DEL
 
 const CRLF = `${CR}${LF}`;
 const CR_NOT_LF = `${CR}(?!${LF})`;
-const EOL = `${CRLF}$`;
 const DOUBLE_DQUOTE = `${DQUOTE}{2}`;
 
 const NON_ESCAPED = `(?:${CR_NOT_LF}|${LF}|${TEXTDATA})+`;
 const ESCAPED = `${DQUOTE}(?:${DOUBLE_DQUOTE}|${TEXTDATA}|${COMMA}|${CR}|${LF})*${DQUOTE}`;
 
+const HEAD_WO_START = `(?:${CRLF}|${COMMA})`;
 const HEAD = `(?:${CRLF}|${COMMA}|${START})`;
-const TAIL = `(?:${DQUOTE}|${CR_NOT_LF}|[^${CR}${COMMA}])*`;
 const BODY = `(?:${ESCAPED}|${NON_ESCAPED}|)`;
+const HEAD_BODY = `(?:${HEAD}${BODY})`;
+const TAIL = `(?:${DQUOTE}|${CR_NOT_LF}|[^${CR}${COMMA}])*`;
 
-const CSV_PATTERN = `(?:${HEAD})(?:${BODY})(?:${TAIL})`;
+const CSV_PATTERN = `(?:${HEAD_WO_START})(?:${BODY})(?:${TAIL})`;
+const CSV_PATTERN_START = `(?:${HEAD})(?:${BODY})(?:${TAIL})`;
 const RECORD_PATTERN = `^(${HEAD})(${BODY})(${TAIL})$`;
 
 const EMPTY_PATTERN = '^$';
@@ -28,26 +28,24 @@ const OUTER_QUOTES = `^${DQUOTE}|${DQUOTE}$`;
 const INNER_QUOTES = DOUBLE_DQUOTE;
 
 
-const csvPattern = new RegExp(CSV_PATTERN, 'g');
+const csvPatternWoStart = new RegExp(CSV_PATTERN, 'g');
+const csvPattern = new RegExp(CSV_PATTERN_START, 'g');
 
 const replaceNl = new RegExp(`(${CR})|(${LF})`, 'g');
 
-const lastEol = new RegExp(EOL);
 const outerQuotesPattern = new RegExp(OUTER_QUOTES, 'g');
 const innerQuotesPattern = new RegExp(INNER_QUOTES, 'g');
 const emptyValuePattern = new RegExp(EMPTY_PATTERN, 'g');
 
-const allowedProperties = ['withHeader', 'withNull'];
-
 function splitTokenToParts(token) {
   const recPattern = new RegExp(RECORD_PATTERN, 'g');
   const headPattern = new RegExp(HEAD, 'g');
-  const bodyPattern = new RegExp(`${HEAD}${BODY}`, 'g');
+  const bodyPattern = new RegExp(HEAD_BODY, 'g');
   const strings = recPattern.exec(token[0]);
   headPattern.exec(token[0]);
   bodyPattern.exec(token[0]);
   const parts = [
-    [strings[0], token[1]],
+    token,
     [strings[1], 0],
     [strings[2], headPattern.lastIndex],
     [strings[3], bodyPattern.lastIndex],
@@ -56,23 +54,25 @@ function splitTokenToParts(token) {
 }
 
 
-function replacer(match) {
-  if (match === '\r') {
-    return '\\r';
-  }
-  return '\\n';
-}
-
 function tokenize(inputStr) {
-  const str = `\r\n${inputStr.replace(lastEol, '')}`;
+  // const str = `${inputStr.replace(lastEol, '')}`;
+  const str = inputStr;
+  if (str === '') {
+    return [[['', 0], ['', 0], ['', 0], ['', 0]]];
+  }
   const tokens = [];
+  let pattern = csvPattern;
+  if (/^,/.test(str)) {
+    tokens.push([['', 0], ['', 0], ['', 0], ['', 0]]);
+    pattern = csvPatternWoStart;
+  }
   let token;
   let index = 0;
   do {
-    token = csvPattern.exec(str);
+    token = pattern.exec(str);
     if (token !== null) {
       token.push(index);
-      index = csvPattern.lastIndex;
+      index = pattern.lastIndex;
       const parts = splitTokenToParts(token);
       tokens.push(parts);
     }
@@ -80,24 +80,33 @@ function tokenize(inputStr) {
   return tokens;
 }
 
-function convertValue(value, withNull) {
-  if (!Number.isNaN(Number.parseFloat(value))) {
+function convertValue(value, withNull, withNumbers) {
+  if (withNumbers && !Number.isNaN(Number.parseFloat(value))) {
     if (value.indexOf('.') !== -1) {
       return Number.parseFloat(value);
     }
     return Number.parseInt(value, 10);
   }
-  if (withNull && emptyValuePattern.test(value)) {
+  if (!withNull) {
+    return value;
+  }
+  if (emptyValuePattern.test(value)) {
     return null;
   }
   const newValue = value.replace(outerQuotesPattern, '');
   return newValue.replace(innerQuotesPattern, '"');
 }
 
-function checkRecords(records, privateProperties) {
-  const { withHeader } = privateProperties;
-  const fieldCount = records[0].length;
+function replacer(match) {
+  if (match === '\r') {
+    return '\\r';
+  }
+  return '\\n';
+}
 
+function checkRecords(records, privateProperties) {
+  const { withHeader, withEmptyLine } = privateProperties;
+  const fieldCount = records[0].length;
   records.forEach((record, recordNo) => {
     record.forEach((field, fieldNo) => {
       if (field[3][0] !== '') {
@@ -109,21 +118,25 @@ function checkRecords(records, privateProperties) {
       }
     });
     if (withHeader && recordNo < 1) {
-      record.forEach((fieldName, index) => {
-        if (fieldName[2][0] === '') {
-          throw new SyntaxError(`Header of field ${index} is empty!`);
+      record.forEach((field, fieldNo) => {
+        if (field[2][0] === '') {
+          throw new SyntaxError(`Header of field ${fieldNo} is empty!`);
         }
-        if (fieldName[2][0] === '""') {
-          throw new SyntaxError(`Header of field ${index} is escaped empty string!`);
+        if (field[2][0] === '""') {
+          throw new SyntaxError(`Header of field ${fieldNo} is escaped empty string!`);
         }
       });
     }
     if (recordNo > 0) {
-      const currentFieldCount = record.length;
-      if (currentFieldCount > fieldCount) {
+      if (record.length > fieldCount) {
         throw new RangeError(`Record ${recordNo} has more fields than first record!`);
-      } else if (currentFieldCount < fieldCount) {
-        throw new RangeError(`Record ${recordNo} has less fields than first record!`);
+      } else if (record.length < fieldCount) {
+        if (!withEmptyLine || record.length > 1) {
+          throw new RangeError(`Record ${recordNo} has less fields than first record!`);
+        } else if (record[0][1][0] !== '\r\n' || record[0][2][0] !== '' || record[0][3][0] !== ''
+          || record[0][1][1] !== 0 || record[0][2][1] !== 2 || record[0][3][1] !== 2) {
+          throw new RangeError(`Record ${recordNo} has less fields than first record!`);
+        }
       }
     }
   });
@@ -145,8 +158,17 @@ function tokensToRecords(tokens) {
 }
 
 function recordsToDataTree(records, privateProperties) {
-  const { withHeader, withNull } = privateProperties;
-  const dataRecords = records.map(
+  const { withHeader, withNull, withEmptyLine } = privateProperties;
+  let filteredRecords = records;
+  if (!withEmptyLine) {
+    filteredRecords = records.filter((record, recordNo) => {
+      return (recordNo < records.length - 1) || (record.length > 1)
+      || (record[0][1][0] !== '\r\n') || (record[0][2][0] !== '') || (record[0][3][0] !== '')
+      || (record[0][1][1] !== 0) || (record[0][2][1] !== 2) || (record[0][3][1] !== 2)
+      || records[0].length < 2;
+    });
+  }
+  const dataRecords = filteredRecords.map(
     record => record.map(field => convertValue(field[2][0], withNull)),
   );
   const tree = {};
@@ -159,10 +181,9 @@ function recordsToDataTree(records, privateProperties) {
   return tree;
 }
 
-function makeRecords(str, privateProperties) {
+function makeRecords(str) {
   const tokens = tokenize(str);
   const records = tokensToRecords(tokens);
-  checkRecords(records, privateProperties);
   return records;
 }
 
@@ -171,60 +192,53 @@ function makeDataTree(str, privateProperties) {
     throw TypeError('Value of argument must be string.');
   }
   const records = makeRecords(str, privateProperties);
+  checkRecords(records, privateProperties);
   const dataTree = recordsToDataTree(records, privateProperties);
   return dataTree;
 }
 
-function setBooleanProperty(propertyName, value, privateProperties) {
-  if (!['boolean', 'undefined'].includes(typeof value) && value !== null) {
-    throw new TypeError(`Value of #${propertyName} property must be boolean, undefined or null.`);
-  }
-  // eslint-disable-next-line no-param-reassign
-  privateProperties[propertyName] = value || false;
-}
+const allowedProperties = {
+  withHeader: false,
+  withNull: false,
+  withNumbers: false,
+  withEmptyLine: false,
+};
 
-function setProperties(properties, privateProperties) {
+function checkProperties(properties) {
   Object.getOwnPropertyNames(properties).forEach((name) => {
-    if (!allowedProperties.includes(name)) {
+    if (!Object.getOwnPropertyNames(allowedProperties).includes(name)) {
       throw new TypeError(`"${name}" is not a name of property.`);
     }
-    setBooleanProperty(name, properties[name], privateProperties);
+    if (!['boolean', 'undefined'].includes(typeof properties[name]) && properties[name] !== null) {
+      throw new TypeError(`Value of #${name} property must be boolean, undefined or null.`);
+    }
   });
+  return true;
 }
+
 
 // Constructor
 function CsvParser(properties = {}) {
-  const privateProperties = {
-    withHeader: false,
-    withNull: false,
-  };
-  setProperties(properties, privateProperties);
+  const privateProperties = Object.seal(allowedProperties);
 
-  const csvParser = Object.seal(
-    Object.create(
-      Object.defineProperties(
-        Object.create(Parser.prototype),
-        {
-          inputType: {
-            value: 'csv',
-          },
-          withHeader: {
-            get: () => privateProperties.withHeader,
-            set: value => setBooleanProperty('withHeader', value, privateProperties),
-          },
-          withNull: {
-            get: () => privateProperties.withNull,
-            set: value => setBooleanProperty('withNull', value, privateProperties),
-          },
-          makeDataTree: {
-            value: data => makeDataTree(data, privateProperties),
-          },
-        },
-      ),
-    ),
-  );
+  function setProperties(_properties) {
+    checkProperties(_properties);
+    const names = Object.getOwnPropertyNames(_properties);
+    names.forEach((name) => {
+      privateProperties[name] = _properties[name] || false;
+    });
+  }
 
-  return csvParser;
+  setProperties(properties);
+
+  return Object.seal({
+    get parameters() { return privateProperties; },
+    set parameters(newProperties) { setProperties(newProperties); },
+    makeRecords(csv) { return makeRecords(csv, privateProperties); },
+    checkRecords(records) { return checkRecords(records, privateProperties); },
+    recordsToDataTree(records) { return recordsToDataTree(records, privateProperties); },
+    makeDataTree(csv) { return makeDataTree(csv, privateProperties); },
+  });
 }
 
 // eslint-disable-next-line import/prefer-default-export
