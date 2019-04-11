@@ -3,8 +3,9 @@ const LF = '\x0A'; // '\x0A' == '\n'
 const START = '^';
 const DQUOTE = '\x22'; // '\x22' == '"'
 const COMMA = '\x2C'; // '\x2C' == ','
+const DEL = '\x7F';
 const CHARS = '[\x20-\xFE]';
-const TEXTDATA = `(?:(?!['${DQUOTE}${COMMA}\x7F])${CHARS})`; // '\x7F' == DEL
+const TEXTDATA = `(?:(?!['${DQUOTE}${COMMA}${DEL}])${CHARS})`; // '\x7F' == DEL
 
 const CRLF = `${CR}${LF}`;
 const CR_NOT_LF = `${CR}(?!${LF})`;
