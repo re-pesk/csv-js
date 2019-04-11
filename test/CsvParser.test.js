@@ -264,6 +264,25 @@ describe('checkValues\n', () => {
   });
 });
 
+describe('makeDataTree\n', () => {
+  describe('throws error\n', () => {
+    it(
+      'when called without argument\n',
+      () => expect(() => makeDataTree()).to.throw(TypeError, 'Function \'makeDataTree\': argument \'csv\' must be a string.'),
+    );
+    it(
+      'when argument \'parameters\' is not object\n',
+      () => expect(() => makeDataTree('', [])).to.throw(TypeError, 'Function \'makeDataTree\': argument \'parameters\' must be object'),
+    );
+  });
+  describe('creates appropriate data tree\n', () => {
+    it(
+      'when argument \'csv\' equals to \'\'\n',
+      () => expect(makeDataTree('')).to.deep.equal({ records: [['']] }),
+    );
+  });
+});
+
 
 /* describe('CsvParser', () => {
   describe('() - calling without arguments:', () => {
