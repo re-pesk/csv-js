@@ -258,22 +258,23 @@ function recordsToDataTree(recordSet, parameters = {}) {
   return tree;
 }
 
-function makeDataTree(csv, parameters = {}) {
+function makeDataTree(csv, _parameters = {}) {
   if (typeof csv !== 'string') {
-    throw TypeError('Function \'rmakeDataTree\': argument "makeDataTree.args.csv" must be a string.');
+    throw TypeError('Function \'makeDataTree\': argument \'csv\' must be a string.');
   }
-  if (typeof parameters !== 'object' || parameters.constructor.name !== 'Object') {
-    throw new TypeError('Function \'rmakeDataTree\': argument \'parameters\' must be object { ... }');
+  if (typeof _parameters !== 'object' || _parameters.constructor.name !== 'Object') {
+    throw new TypeError('Function \'makeDataTree\': argument \'parameters\' must be object');
   }
-  const newParameters = {
-    withHeader: parameters.withHeader || false,
-    withNull: parameters.withNull || false,
-    withNumbers: parameters.withNumbers || false,
-    withEmptyLine: parameters.withEmptyLine || false,
+  const parameters = {
+    withHeader: _parameters.withHeader || false,
+    withNull: _parameters.withNull || false,
+    withNumbers: _parameters.withNumbers || false,
+    withEmptyLine: _parameters.withEmptyLine || false,
+    onlyChecked: _parameters.onlyChecked || false,
   };
 
   const recordSet = makeRecords(csv);
-  const dataTree = recordsToDataTree(recordSet, newParameters);
+  const dataTree = recordsToDataTree(recordSet, parameters);
   return dataTree;
 }
 
