@@ -5,7 +5,9 @@ import {
   makeRecords, checkRecords, checkValues, recordsToDataTree, makeDataTree 
 } from '../src/CsvParser';
 
-import { escapeNL, indentString } from '../src/helpers';
+import {
+  escapeNL, indent, indentString, indentJson,
+} from '../src/helpers';
 
 describe('makeRecords\n', () => {
   const testDataList = {
