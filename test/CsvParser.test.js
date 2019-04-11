@@ -214,22 +214,16 @@ describe('checkRecords\n', () => {
           withEmptyLine: false,
           message: 'Function \'checkRecords\': the last record 1 has only one field, but \'withEmptyLine\' is set to false!',
         },
-        {
-          it: 'parameter \'withEmptyLine\' is set to \'true\', the only field of the last record 1 is not empty:\n',
-          withEmptyLine: true,
-          csv: ',\r\na',
-          message: 'Function \'checkRecords\': the only field of the last record 1 is not empty!',
-        },
       ];
       testDataList.forEach((testData) => {
         const records = makeRecords(testData.csv);
-        const { withEmptyLine } = testData;
+        const parameters = { withEmptyLine: testData.withEmptyLine };
         it(testData.it, () => {
-          if (withEmptyLine === undefined) {
-            expect(() => checkRecords(records)).to.throw(TypeError, testData.message);  
-          } else {
-            expect(() => checkRecords(records, { withEmptyLine })).to.throw(TypeError, testData.message);
-          }
+          expect(
+            () => {
+              checkRecords(records, parameters);
+            },
+          ).to.throw(TypeError, testData.message);
         });
       });
     });
@@ -248,8 +242,10 @@ describe('checkValues\n', () => {
           message: 'Record 0, field 0: \'"abc""\' has corrupted end \'"\' at position 5!',
         },
         {
-          csv: ',\r\n',
-          message: 'Record 1 has less fields than record 0!',
+          it: 'parameter \'withEmptyLine\' is set to \'true\', but the only field of the last record 1 is not empty:',
+          csv: ',\r\na',
+          withEmptyLine: true,
+          message: 'Function \'checkValues\': when \'withEmptyLine\' is set to true, the only field of the last record 1 is not empty!',
         },
       ];
       testDataList.forEach((testData) => {
