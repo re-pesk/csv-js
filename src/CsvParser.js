@@ -78,8 +78,126 @@ function tokenize(csv) {
   return tokens;
 }
 
+function tokensToRecords(tokens) {
+  const recordSet = [];
+
+  tokens.forEach((token) => {
+    if (token[1][0] !== ',') {
+      recordSet.push([token]);
+    } else {
+      recordSet[recordSet.length - 1].push(token);
+    }
+  });
+
+  return recordSet;
+}
+
+function makeRecords(csv) {
+  if (typeof csv !== 'string') {
+    throw new TypeError('Function "makeRecords": the argument "csv" must be string!');
+  }
+  const tokens = tokenize(csv);
+  const recordSet = tokensToRecords(tokens);
+  return recordSet;
+}
+
+function replacer(match) {
+  if (match === '\r') {
+    return '\\r';
+  }
+  return '\\n';
+}
+
+function checkRecords(recordSet, parameters = {}) {
+  if (!Array.isArray(recordSet)) {
+    throw new TypeError('Function \'checkRecords\': value of \'recordSet\' must be an array!');
+  } else if (recordSet.length < 1) {
+    throw new TypeError('Function \'checkRecords\': value of \'recordSet\' cannot be empty array!');
+  }
+  if (typeof parameters !== 'object' || parameters.constructor.name !== 'Object') {
+    throw new TypeError('Function \'checkRecords\': value of \'parameters\' must be an Object');
+  }
+  const withEmptyLine = parameters.withEmptyLine || false;
+  const fieldCount = recordSet[0].length;
+  recordSet.forEach((record, recordNo) => {
+    if (record.length < 1) {
+      throw new TypeError(`Function 'checkRecords': record ${recordNo} have no fields!`);
+    }
+    record.forEach((field, fieldNo) => {
+      if (field.length !== 4) {
+        throw new TypeError(`Function 'checkRecords': item ${fieldNo} of record ${recordNo} is not an field!`);
+      }
+      field.forEach((part, partNo) => {
+        if (part.length !== 2 || typeof part[0] !== 'string' || typeof part[1] !== 'number') {
+          throw new TypeError(`Function 'checkRecords': item ${partNo} of field ${fieldNo} of record ${recordNo} is not a part of field!`);
+        }
+      });
+    });
+    if (recordNo > 0) {
+      if (record.length > fieldCount) {
+        throw new TypeError(`Function 'checkRecords': record ${recordNo} has more fields than record 0!`);
+      } else if (record.length < fieldCount) {
+        if (recordNo < recordSet.length - 1) {
+          throw new TypeError(`Function 'checkRecords': record ${recordNo} has less fields than record 0!`);
+        } else if (record.length > 1) {
+          throw new TypeError(`Function 'checkRecords': the last record ${recordNo} has less fields than record 0, but more than 1!`);
+        } else if (!withEmptyLine) {
+          throw new TypeError(`Function 'checkRecords': the last record ${recordNo} has only one field, but 'withEmptyLine' is set to false!`);
+        }
+      }
+    }
+  });
+  return true;
+}
+
+function checkValues(recordSet, parameters = {}) {
+  if (!Array.isArray(recordSet)) {
+    throw new TypeError('Function \'checkRecords\': value of \'recordSet\' must be an array!');
+  } else if (recordSet.length < 1) {
+    throw new TypeError('Function \'checkRecords\': value of \'recordSet\' cannot be empty array!');
+  }
+  if (typeof parameters !== 'object' || parameters.constructor.name !== 'Object') {
+    throw new TypeError('Function \'checkRecords\': value of \'parameters\' must be an Object');
+  }
+  const withHeader = parameters.withHeader || false;
+  const withEmptyLine = parameters.withEmptyLine || false;
+  recordSet.forEach((record, recordNo) => {
+    record.forEach((field, fieldNo) => {
+      if (field[3][0] !== '') {
+        const fieldStr = replaceNl[Symbol.replace](field[0][0], replacer);
+        const endStr = replaceNl[Symbol.replace](field[3][0], replacer);
+        throw new TypeError(
+          `Function 'checkRecords': record ${recordNo}, field ${fieldNo}: '${fieldStr}' has corrupted end '${endStr}' at position ${field[3][1]}!`,
+        );
+      }
+    });
+  });
+
+  if (withHeader) {
+    recordSet[0].forEach((field, fieldNo) => {
+      if (field[2][0] === '') {
+        throw new TypeError(`Function 'checkRecords': header of field ${fieldNo} is empty!`);
+      }
+      if (field[2][0] === '""') {
+        throw new TypeError(`Function 'checkRecords': header of field ${fieldNo} is escaped empty string!`);
+      }
+    });
+  }
+
+  if (recordSet.length > 1) {
+    const firstRecord = recordSet[0];
+    const lastRecord = recordSet[recordSet.length - 1];
+    if (firstRecord.length > 1 && lastRecord.length === 1 && withEmptyLine) {
+      if (lastRecord[0][1][0] !== '\r\n' || lastRecord[0][2][0] !== '' || lastRecord[0][3][0] !== ''
+          || lastRecord[0][1][1] !== 0 || lastRecord[0][2][1] !== 2 || lastRecord[0][3][1] !== 2) {
+        throw new TypeError(`Function 'checkRecords': when 'withEmptyLine' is set to true the only field of the last record ${recordSet.length - 1} must be empty!'`);
+      }
+    }
+  }
+  return true;
+}
+
 function convertValue(value, withNull, withNumbers) {
-  const isNaN = Number.isNaN(Number.parseFloat(value));
   if (withNumbers && !Number.isNaN(Number.parseFloat(value))) {
     if (value.indexOf('.') !== -1) {
       return Number.parseFloat(value);
@@ -96,76 +214,36 @@ function convertValue(value, withNull, withNumbers) {
   return newValue.replace(innerQuotesPattern, '"');
 }
 
-function replacer(match) {
-  if (match === '\r') {
-    return '\\r';
+function recordsToDataTree(recordSet, parameters = {}) {
+  if (!Array.isArray(recordSet)) {
+    throw new TypeError('Function \'checkRecords\': value of \'recordSet\' must be an array!');
+  } else if (recordSet.length < 1) {
+    throw new TypeError('Function \'checkRecords\': value of \'recordSet\' cannot be empty array!');
   }
-  return '\\n';
-}
+  if (typeof parameters !== 'object' || parameters.constructor.name !== 'Object') {
+    throw new TypeError('Function \'checkRecords\': value of \'parameters\' must be an Object');
+  }
+  const withHeader = parameters.withHeader || false;
+  const withNull = parameters.withNull || false;
+  const withNumbers = parameters.withNumbers || false;
+  const withEmptyLine = parameters.withEmptyLine || false;
+  const onlyChecked = parameters.onlyChecked || false;
+  
+  checkRecords(recordSet, parameters);
+  if (onlyChecked) {
+    checkValues(recordSet, parameters);
+  }
 
-function checkRecords(records, privateProperties) {
-  const { withHeader, withEmptyLine } = privateProperties;
-  const fieldCount = records[0].length;
-  records.forEach((record, recordNo) => {
-    record.forEach((field, fieldNo) => {
-      if (field[3][0] !== '') {
-        const fieldStr = replaceNl[Symbol.replace](field[0][0], replacer);
-        const endStr = replaceNl[Symbol.replace](field[3][0], replacer);
-        throw new SyntaxError(
-          `Record ${recordNo}, field ${fieldNo}: '${fieldStr}' has corrupted end '${endStr}' at position ${field[3][1]}!`,
-        );
-      }
-    });
-    if (withHeader && recordNo < 1) {
-      record.forEach((field, fieldNo) => {
-        if (field[2][0] === '') {
-          throw new SyntaxError(`Header of field ${fieldNo} is empty!`);
-        }
-        if (field[2][0] === '""') {
-          throw new SyntaxError(`Header of field ${fieldNo} is escaped empty string!`);
-        }
-      });
-    }
-    if (recordNo > 0) {
-      if (record.length > fieldCount) {
-        throw new RangeError(`Record ${recordNo} has more fields than first record!`);
-      } else if (record.length < fieldCount) {
-        if (!withEmptyLine || record.length > 1) {
-          throw new RangeError(`Record ${recordNo} has less fields than first record!`);
-        } else if (record[0][1][0] !== '\r\n' || record[0][2][0] !== '' || record[0][3][0] !== ''
-          || record[0][1][1] !== 0 || record[0][2][1] !== 2 || record[0][3][1] !== 2) {
-          throw new RangeError(`Record ${recordNo} has less fields than first record!`);
-        }
-      }
-    }
-  });
-  return true;
-}
-
-function tokensToRecords(tokens) {
-  const records = [];
-
-  tokens.forEach((token) => {
-    if (token[1][0] !== ',') {
-      records.push([token]);
-    } else {
-      records[records.length - 1].push(token);
-    }
-  });
-
-  return records;
-}
-
-function recordsToDataTree(records, privateProperties) {
-  const { withHeader, withNull, withNumbers, withEmptyLine } = privateProperties;
-  let filteredRecords = records;
+  let filteredRecords = recordSet;
   if (!withEmptyLine) {
-    filteredRecords = records.filter((record, recordNo) => {
-      return (recordNo < records.length - 1) || (record.length > 1)
-      || (record[0][1][0] !== '\r\n') || (record[0][2][0] !== '') || (record[0][3][0] !== '')
-      || (record[0][1][1] !== 0) || (record[0][2][1] !== 2) || (record[0][3][1] !== 2)
-      || records[0].length < 2;
-    });
+    filteredRecords = recordSet.filter(
+      (record, recordNo) => (
+        recordNo < recordSet.length - 1 || record.length > 1
+        || record[0][1][0] !== '\r\n' || record[0][2][0] !== '' || record[0][3][0] !== ''
+        || record[0][1][1] !== 0 || record[0][2][1] !== 2 || record[0][3][1] !== 2
+        || recordSet[0].length < 2
+      ),
+    );
   }
   const dataRecords = filteredRecords.map(
     record => record.map(field => convertValue(field[2][0], withNull, withNumbers)),
@@ -175,68 +253,31 @@ function recordsToDataTree(records, privateProperties) {
     tree.header = dataRecords.shift();
   }
   if (dataRecords.length > 0) {
-    tree.records = dataRecords;
+    tree.recordSet = dataRecords;
   }
   return tree;
 }
 
-function makeRecords(str) {
-  const tokens = tokenize(str);
-  const records = tokensToRecords(tokens);
-  return records;
-}
-
-function makeDataTree(str, privateProperties) {
-  if (typeof str !== 'string') {
-    throw TypeError('Value of argument must be string.');
+function makeDataTree(csv, parameters = {}) {
+  if (typeof csv !== 'string') {
+    throw TypeError('Function \'rmakeDataTree\': argument "makeDataTree.args.csv" must be a string.');
   }
-  const records = makeRecords(str, privateProperties);
-  checkRecords(records, privateProperties);
-  const dataTree = recordsToDataTree(records, privateProperties);
+  if (typeof parameters !== 'object' || parameters.constructor.name !== 'Object') {
+    throw new TypeError('Function \'rmakeDataTree\': argument \'parameters\' must be object { ... }');
+  }
+  const newParameters = {
+    withHeader: parameters.withHeader || false,
+    withNull: parameters.withNull || false,
+    withNumbers: parameters.withNumbers || false,
+    withEmptyLine: parameters.withEmptyLine || false,
+  };
+
+  const recordSet = makeRecords(csv);
+  const dataTree = recordsToDataTree(recordSet, newParameters);
   return dataTree;
 }
 
-function checkProperties(properties, privateProperties) {
-  Object.getOwnPropertyNames(properties).forEach((name) => {
-    if (!Object.getOwnPropertyNames(privateProperties).includes(name)) {
-      throw new TypeError(`"${name}" is not a name of property.`);
-    }
-    if (!['boolean', 'undefined'].includes(typeof properties[name]) && properties[name] !== null) {
-      throw new TypeError(`Value of #${name} property must be boolean, undefined or null.`);
-    }
-  });
-  return true;
-}
-
-
-// Constructor
-function CsvParser(properties = {}) {
-  const privateProperties = Object.seal({
-    withHeader: false,
-    withNull: false,
-    withNumbers: false,
-    withEmptyLine: false,
-  });
-
-  function setProperties(_properties) {
-    checkProperties(_properties, privateProperties);
-    const names = Object.getOwnPropertyNames(_properties);
-    names.forEach((name) => {
-      privateProperties[name] = _properties[name] || false;
-    });
-  }
-
-  setProperties(properties);
-
-  return Object.seal({
-    get parameters() { return privateProperties; },
-    set parameters(newProperties) { setProperties(newProperties); },
-    makeRecords(csv) { return makeRecords(csv); },
-    checkRecords(records) { return checkRecords(records, privateProperties); },
-    recordsToDataTree(records) { return recordsToDataTree(records, privateProperties); },
-    makeDataTree(csv) { return makeDataTree(csv, privateProperties); },
-  });
-}
-
 // eslint-disable-next-line import/prefer-default-export
-export { CsvParser };
+export {
+  makeRecords, checkRecords, checkValues, recordsToDataTree, makeDataTree,
+};

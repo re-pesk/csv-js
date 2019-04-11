@@ -1,8 +1,269 @@
+/* eslint-disable camelcase */
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
-import { CsvParser } from '../src/CsvParser';
+import {
+  makeRecords, checkRecords, checkValues, recordsToDataTree, makeDataTree 
+} from '../src/CsvParser';
 
-describe('CsvParser', () => {
+import { escapeNL, indentString } from '../src/helpers';
+
+describe('makeRecords\n', () => {
+  const testDataList = {
+    makeRecords: [
+      {
+        csv: '',
+        it: '1 record x 1 field',
+        records: [
+          [
+            [['', 0], ['', 0], ['', 0], ['', 0]],
+          ],
+        ],
+      },
+      {
+        csv: '""',
+        it: '1 record x 1 field with quoted value',
+        records: [
+          [
+            [['""', 0], ['', 0], ['""', 0], ['', 2]],
+          ],
+        ],
+      },
+      {
+        csv: ',',
+        it: '1 record x 2 fields',
+        records: [
+          [
+            [['', 0], ['', 0], ['', 0], ['', 0]],
+            [[',', 0], [',', 0], ['', 1], ['', 1]],
+          ],
+        ],
+      },
+      {
+        csv: '","',
+        it: '1 record x 1 field with quoted value',
+        records: [
+          [
+            [['","', 0], ['', 0], ['","', 0], ['', 3]],
+          ],
+        ],
+      },
+      {
+        csv: '\r\n',
+        it: '2 records x 1 field',
+        records: [
+          [
+            [['', 0], ['', 0], ['', 0], ['', 0]],
+          ], [
+            [['\r\n', 0], ['\r\n', 0], ['', 2], ['', 2]],
+          ],
+        ],
+      },
+      {
+        csv: '\r\n\r\n',
+        it: '3 records x 1 field',
+        records: [
+          [[['', 0], ['', 0], ['', 0], ['', 0]]],
+          [[['\r\n', 0], ['\r\n', 0], ['', 2], ['', 2]]],
+          [[['\r\n', 2], ['\r\n', 0], ['', 2], ['', 2]]],
+        ],
+      },
+      {
+        csv: '"\r\n\r\n"',
+        it: '1 record x 1 field with quoted value',
+        records: [
+          [[['"\r\n\r\n"', 0], ['', 0], ['"\r\n\r\n"', 0], ['', 6]]],
+        ],
+      },
+      {
+        csv: ',\r\n',
+        it: '1 record x 2 fields + 1 record x 1 field',
+        records: [
+          [
+            [['', 0], ['', 0], ['', 0], ['', 0]],
+            [[',', 0], [',', 0], ['', 1], ['', 1]],
+          ],
+          [[['\r\n', 1], ['\r\n', 0], ['', 2], ['', 2]]],
+        ],
+      },
+      {
+        csv: '\n\r"abc"\r\r\n',
+        it: '1 record x 1 corrupted field + 1 record x 1 normal field',
+        records: [
+          [[['\n\r"abc"\r', 0], ['', 0], ['\n\r', 0], ['"abc"\r', 2]]],
+          [[['\r\n', 8], ['\r\n', 0], ['', 2], ['', 2]]],
+        ],
+      },
+      {
+        csv: '"abc"\n\r\r\n\n\r"abc"',
+        it: '2 records x 1 corrupted field',
+        records: [
+          [[['"abc"\n\r', 0], ['', 0], ['"abc"', 0], ['\n\r', 5]]],
+          [[['\r\n\n\r"abc"', 7], ['\r\n', 0], ['\n\r', 2], ['"abc"', 4]]],
+        ],
+      },
+    ],
+  };
+  describe('throws error\n', () => {
+    it(
+      'when called without argument\n',
+      () => expect(() => makeRecords()).to.throw(TypeError, 'Function "makeRecords": the argument "csv" must be string!'),
+    );
+  });
+  describe('returns set of records that contains:\n', () => {
+    testDataList.makeRecords.forEach((testData) => {
+      const escapedStr = escapeNL(testData.csv);
+      it(
+        `${testData.it}\n          when argument 'csv' is '${escapedStr}'\n`,
+        () => expect(makeRecords(testData.csv)).to.deep.equal(testData.records),
+      );
+    });
+  });
+});
+
+/*
+checkRecords
+  throws error  
+    when is called without arguments
+      value of argument 'recordset' is undefined
+    when argument 'recordset' gets value of a wrong type
+      value is undefined
+      value is not array
+    when value of 'recordset' has a wrong structure
+    when not all records has the same length 
+  
+*/
+
+describe('checkRecords\n', () => {
+  describe('throws error\n', () => {
+    describe('when it is called without arguments\n', () => {
+      it(
+        'value of \'recordset\' is undefined\n',
+        () => expect(() => checkRecords()).to.throw(TypeError, 'Function \'checkRecords\': value of \'recordSet\' must be an array!'),
+      );
+    });
+    describe('when argument \'recordset\' gets value of a wrong type:\n', () => {
+      const testDataList = [
+        {
+          it: 'value is undefined\n',
+          records: undefined,
+          message: 'Function \'checkRecords\': value of \'recordSet\' must be an array!',
+        },
+        {
+          it: 'value is not an array\n',
+          records: {},
+          message: 'Function \'checkRecords\': value of \'recordSet\' must be an array!',
+        },
+      ];
+      testDataList.forEach((testData) => {
+        it(
+          testData.it,
+          () => expect(
+            () => checkRecords(testData.records),
+          ).to.throw(TypeError, testData.message),
+        );
+      });
+    });
+    describe('when value of \'recordset\' has a wrong structure:\n', () => {
+      const testDataList = [
+        {
+          it: 'value is empty array\n',
+          records: [],
+          message: 'Function \'checkRecords\': value of \'recordSet\' cannot be empty array!',
+        },
+        {
+          it: 'array contains record without fields\n',
+          records: [[]],
+          message: 'Function \'checkRecords\': record 0 have no fields!',
+        },
+        {
+          it: 'array contains record that have an empty element\n',
+          records: [[[]]],
+          message: 'Function \'checkRecords\': item 0 of record 0 is not an field!',
+        },
+      ];
+      testDataList.forEach((testData) => {
+        it(
+          testData.it,
+          () => expect(
+            () => checkRecords(testData.records),
+          ).to.throw(TypeError, testData.message),
+        );
+      });
+    });
+    describe('when not all records in \'recordSet\' has the same length:\n', () => {
+      const testDataList = [
+        {
+          it: 'record has more fields than first record\n',
+          csv: '\r\n,',
+          message: 'Function \'checkRecords\': record 1 has more fields than record 0!',
+        },
+        {
+          it: 'record has less fields than first record\n',
+          csv: ',\r\n\r\n',
+          message: 'Function \'checkRecords\': record 1 has less fields than record 0!',
+        },
+        {
+          it: 'the last record has has less fields than first record, but more than one\n',
+          csv: ',,\r\n,',
+          message: 'Function \'checkRecords\': the last record 1 has less fields than record 0, but more than 1!',
+        },
+        {
+          it: 'the last record has only one field, but parameter \'withEmptyLine\' is set to \'false\':\n',
+          csv: ',\r\n',
+          withEmptyLine: false,
+          message: 'Function \'checkRecords\': the last record 1 has only one field, but \'withEmptyLine\' is set to false!',
+        },
+        {
+          it: 'parameter \'withEmptyLine\' is set to \'true\', the only field of the last record 1 is not empty:\n',
+          withEmptyLine: true,
+          csv: ',\r\na',
+          message: 'Function \'checkRecords\': the only field of the last record 1 is not empty!',
+        },
+      ];
+      testDataList.forEach((testData) => {
+        const records = makeRecords(testData.csv);
+        const { withEmptyLine } = testData;
+        it(testData.it, () => {
+          if (withEmptyLine === undefined) {
+            expect(() => checkRecords(records)).to.throw(TypeError, testData.message);  
+          } else {
+            expect(() => checkRecords(records, { withEmptyLine })).to.throw(TypeError, testData.message);
+          }
+        });
+      });
+    });
+  });
+});
+describe('checkValues\n', () => {
+  describe('throws error\n', () => {
+    describe('when records contains wrong data:\n', () => {
+      const testDataList = [
+        {
+          csv: 'abc"',
+          message: 'Record 0, field 0: \'abc"\' has corrupted end \'"\' at position 3!',
+        },
+        {
+          csv: '"abc""',
+          message: 'Record 0, field 0: \'"abc""\' has corrupted end \'"\' at position 5!',
+        },
+        {
+          csv: ',\r\n',
+          message: 'Record 1 has less fields than record 0!',
+        },
+      ];
+      testDataList.forEach((testData) => {
+        const escCsv = escapeNL(testData.csv);
+        const records = makeRecords(testData.csv);
+        it(`csv == '${escCsv}' ->\n${indentString('records ==', 6)}\n${indentString(JSON.stringify(records), 7)}\n`, () => {
+          expect(() => checkRecords(records)).to.throw(TypeError, testData.message);
+        });
+      });
+    });
+  });
+});
+
+
+/* describe('CsvParser', () => {
   describe('() - calling without arguments:', () => {
     it('creates object with expected properties', () => {
       const csvParser = CsvParser();
@@ -342,4 +603,4 @@ zzz,,""\r
       });
     });
   });
-});
+}); */
