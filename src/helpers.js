@@ -11,15 +11,27 @@ function clearString(input) {
 }
 
 function indentString(input, spaceInt) {
-  const result = clearString(input)
-    .replace(/^\[{4}/, '[\n[[[')
-    .replace(/\]{4}$/, ']]]\n]')
-    .replace(/\]{3}, \[{3}/, ']]],\n[[[')
-    .replace(/\[{3}/g, '  [[[')
+  const result = input
     .replace(/^/, '  '.repeat(spaceInt))
     .replace(/(?<!\\)\n/g, `\n${'  '.repeat(spaceInt)}`);
   return result;
 }
 
+function indentJson(input, spaceInt) {
+  const result = clearString(JSON.stringify(input))
+    .replace(/^\[{4}/, '[\n[[[')
+    .replace(/\]{4}$/, ']]]\n]')
+    .replace(/\]{3}, \[{3}/, ']]],\n[[[')
+    .replace(/\[{3}/g, '  [[[');
+  return indentString(result, spaceInt);
+}
+
+
+function indent(input, spaceInt) {
+  return input.repeat(spaceInt);
+}
+
 // eslint-disable-next-line import/prefer-default-export
-export { escapeNL, clearString, indentString };
+export {
+  escapeNL, clearString, indent, indentString, indentJson,
+};
