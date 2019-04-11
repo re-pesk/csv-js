@@ -152,12 +152,12 @@ function checkRecords(recordSet, parameters = {}) {
 
 function checkValues(recordSet, parameters = {}) {
   if (!Array.isArray(recordSet)) {
-    throw new TypeError('Function \'checkRecords\': value of \'recordSet\' must be an array!');
+    throw new TypeError('Function \'checkValues\': value of \'recordSet\' must be an array!');
   } else if (recordSet.length < 1) {
-    throw new TypeError('Function \'checkRecords\': value of \'recordSet\' cannot be empty array!');
+    throw new TypeError('Function \'checkValues\': value of \'recordSet\' cannot be empty array!');
   }
   if (typeof parameters !== 'object' || parameters.constructor.name !== 'Object') {
-    throw new TypeError('Function \'checkRecords\': value of \'parameters\' must be an Object');
+    throw new TypeError('Function \'checkValues\': value of \'parameters\' must be an Object');
   }
   const withHeader = parameters.withHeader || false;
   const withEmptyLine = parameters.withEmptyLine || false;
@@ -167,7 +167,7 @@ function checkValues(recordSet, parameters = {}) {
         const fieldStr = replaceNl[Symbol.replace](field[0][0], replacer);
         const endStr = replaceNl[Symbol.replace](field[3][0], replacer);
         throw new TypeError(
-          `Function 'checkRecords': record ${recordNo}, field ${fieldNo}: '${fieldStr}' has corrupted end '${endStr}' at position ${field[3][1]}!`,
+          `Function 'checkValues': record ${recordNo}, field ${fieldNo}: '${fieldStr}' has corrupted end '${endStr}' at position ${field[3][1]}!`,
         );
       }
     });
@@ -176,10 +176,10 @@ function checkValues(recordSet, parameters = {}) {
   if (withHeader) {
     recordSet[0].forEach((field, fieldNo) => {
       if (field[2][0] === '') {
-        throw new TypeError(`Function 'checkRecords': header of field ${fieldNo} is empty!`);
+        throw new TypeError(`Function 'checkValues': header of field ${fieldNo} is empty!`);
       }
       if (field[2][0] === '""') {
-        throw new TypeError(`Function 'checkRecords': header of field ${fieldNo} is escaped empty string!`);
+        throw new TypeError(`Function 'checkValues': header of field ${fieldNo} is escaped empty string!`);
       }
     });
   }
@@ -190,7 +190,7 @@ function checkValues(recordSet, parameters = {}) {
     if (firstRecord.length > 1 && lastRecord.length === 1 && withEmptyLine) {
       if (lastRecord[0][1][0] !== '\r\n' || lastRecord[0][2][0] !== '' || lastRecord[0][3][0] !== ''
           || lastRecord[0][1][1] !== 0 || lastRecord[0][2][1] !== 2 || lastRecord[0][3][1] !== 2) {
-        throw new TypeError(`Function 'checkRecords': when 'withEmptyLine' is set to true the only field of the last record ${recordSet.length - 1} must be empty!'`);
+        throw new TypeError(`Function 'checkValues': when 'withEmptyLine' is set to true, the only field of the last record ${recordSet.length - 1} is not empty!'`);
       }
     }
   }
