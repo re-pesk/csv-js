@@ -113,9 +113,8 @@ describe('makeRecords\n', () => {
   });
   describe('returns set of records that contains:\n', () => {
     testDataList.makeRecords.forEach((testData) => {
-      const escapedStr = escapeNL(testData.csv);
       it(
-        `${testData.it}\n          when argument 'csv' is '${escapedStr}'\n`,
+        `${testData.it}\n${indent('  ', 5)}when argument 'csv' is '${escapeNL(testData.csv)}'\n`,
         () => expect(makeRecords(testData.csv)).to.deep.equal(testData.records),
       );
     });
