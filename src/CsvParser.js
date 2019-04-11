@@ -253,7 +253,7 @@ function recordsToDataTree(recordSet, parameters = {}) {
     tree.header = dataRecords.shift();
   }
   if (dataRecords.length > 0) {
-    tree.recordSet = dataRecords;
+    tree.records = dataRecords;
   }
   return tree;
 }
