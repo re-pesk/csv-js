@@ -54,23 +54,20 @@ function splitTokenToParts(token) {
   return parts;
 }
 
-
-function tokenize(inputStr) {
-  // const str = `${inputStr.replace(lastEol, '')}`;
-  const str = inputStr;
-  if (str === '') {
+function tokenize(csv) {
+  if (csv === '') {
     return [[['', 0], ['', 0], ['', 0], ['', 0]]];
   }
   const tokens = [];
   let pattern = csvPattern;
-  if (/^,/.test(str)) {
+  if (/^(?:\r\n|,)/.test(csv)) {
     tokens.push([['', 0], ['', 0], ['', 0], ['', 0]]);
     pattern = csvPatternWoStart;
   }
   let token;
   let index = 0;
   do {
-    token = pattern.exec(str);
+    token = pattern.exec(csv);
     if (token !== null) {
       token.push(index);
       index = pattern.lastIndex;
