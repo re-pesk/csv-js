@@ -54,9 +54,9 @@ function splitTokenToParts(token) {
   return parts;
 }
 
-function checkCsvString(csv, functionName) {
-  if (typeof csv !== 'string') {
-    throw new TypeError(`Function '${functionName}': value of 'csv' must be a string!`);
+function checkCsvString(csvString, functionName) {
+  if (typeof csvString !== 'string') {
+    throw new TypeError(`Function '${functionName}': value of 'csvString' must be a string!`);
   }
 }
 
@@ -71,7 +71,7 @@ function checkRecordSet(recordSet, functionName) {
 const allowedParameterList = ['withHeader', 'withNull', 'withNumbers', 'withEmptyLine', 'checkValues'];
 
 function checkParameters(parameters, functionName) {
-  if (typeof parameters !== 'object' 
+  if (typeof parameters !== 'object'
       || parameters.constructor.name !== 'Object') {
     throw new TypeError(`Function '${functionName}': value of 'parameters' must be an Object!`);
   }
@@ -85,20 +85,20 @@ function checkParameters(parameters, functionName) {
   });
 }
 
-function tokenize(csv) {
-  if (csv === '') {
+function tokenize(csvString) {
+  if (csvString === '') {
     return [[['', 0], ['', 0], ['', 0], ['', 0]]];
   }
   const tokens = [];
   let pattern = csvPattern;
-  if (/^(?:\r\n|,)/.test(csv)) {
+  if (/^(?:\r\n|,)/.test(csvString)) {
     tokens.push([['', 0], ['', 0], ['', 0], ['', 0]]);
     pattern = csvPatternWoStart;
   }
   let token;
   let index = 0;
   do {
-    token = pattern.exec(csv);
+    token = pattern.exec(csvString);
     if (token !== null) {
       token.push(index);
       index = pattern.lastIndex;
@@ -123,9 +123,9 @@ function tokensToRecords(tokens) {
   return recordSet;
 }
 
-function makeRecords(csv) {
-  checkCsvString(csv, 'makeRecords');
-  const tokens = tokenize(csv);
+function makeRecords(csvString) {
+  checkCsvString(csvString, 'makeRecords');
+  const tokens = tokenize(csvString);
   const recordSet = tokensToRecords(tokens);
   return recordSet;
 }
@@ -272,10 +272,10 @@ function recordsToDataTree(recordSet, parameters = {}) {
   return tree;
 }
 
-function makeDataTree(csv, parameters = {}) {
-  checkCsvString(csv, 'makeDataTree');
+function makeDataTree(csvString, parameters = {}) {
+  checkCsvString(csvString, 'makeDataTree');
   checkParameters(parameters, 'makeDataTree');
-  const recordSet = makeRecords(csv);
+  const recordSet = makeRecords(csvString);
   const dataTree = recordsToDataTree(recordSet, parameters);
   return dataTree;
 }
