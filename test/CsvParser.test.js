@@ -264,6 +264,41 @@ describe('checkValues\n', () => {
   });
 });
 
+describe('checkValues\n', () => {
+  describe('throws error\n', () => {
+    describe('when records contains wrong data:\n', () => {
+      const testDataList = [
+        {
+          it: '\'abc"\' has corrupted end \'"\' at position 3!',
+          csv: 'abc"',
+          message: 'Function \'checkValues\': record 0, field 0: \'abc"\' has corrupted end \'"\' at position 3!',
+        },
+        {
+          it: '\'"abc""\' has corrupted end \'"\' at position 5!',
+          csv: '"abc""',
+          message: 'Function \'checkValues\': record 0, field 0: \'"abc""\' has corrupted end \'"\' at position 5!',
+        },
+        {
+          it: 'parameter \'withEmptyLine\' is set to \'true\', but the only field of the last record 1 is not empty:',
+          csv: ',\r\na',
+          withEmptyLine: true,
+          message: 'Function \'checkValues\': when \'withEmptyLine\' is set to true, the only field of the last record 1 is not empty!',
+        },
+      ];
+      testDataList.forEach((testData) => {
+        const escCsv = escapeNL(testData.csv);
+        const records = makeRecords(testData.csv);
+        const parameters = { withEmptyLine: testData.withEmptyLine };
+        it(`${testData.it}\n${indentString(`csv == '${escCsv}' ->\nrecords ==`, 6)}\n${indentJson(records, 7)}\n`, () => {
+          expect(() => {
+            checkValues(records, parameters);
+          }).to.throw(TypeError, testData.message);
+        });
+      });
+    });
+  });
+});
+
 describe('makeDataTree\n', () => {
   describe('throws error\n', () => {
     it(
