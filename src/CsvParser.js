@@ -54,6 +54,37 @@ function splitTokenToParts(token) {
   return parts;
 }
 
+function checkCsvString(csv, functionName) {
+  if (typeof csv !== 'string') {
+    throw new TypeError(`Function '${functionName}': value of 'csv' must be a string!`);
+  }
+}
+
+function checkRecordSet(recordSet, functionName) {
+  if (!Array.isArray(recordSet)) {
+    throw new TypeError(`Function '${functionName}': value of 'recordSet' must be an array!`);
+  } else if (recordSet.length < 1) {
+    throw new TypeError(`Function '${functionName}': value of 'recordSet' cannot be empty array!`);
+  }
+}
+
+const allowedParameterList = ['withHeader', 'withNull', 'withNumbers', 'withEmptyLine', 'checkValues'];
+
+function checkParameters(parameters, functionName) {
+  if (typeof parameters !== 'object' 
+      || parameters.constructor.name !== 'Object') {
+    throw new TypeError(`Function '${functionName}': value of 'parameters' must be an Object!`);
+  }
+  Object.getOwnPropertyNames(parameters).forEach((name) => {
+    if (!allowedParameterList.includes(name)) {
+      TypeError(`Function '${functionName}': object int the 'parameters' argument includes a member '${name}' which is not included in the list of allowed parameters!`);
+    }
+    if (typeof parameters[name] !== 'boolean') {
+      TypeError(`Function '${functionName}': value of parameter '${name}' is not boolean!`);
+    }
+  });
+}
+
 function tokenize(csv) {
   if (csv === '') {
     return [[['', 0], ['', 0], ['', 0], ['', 0]]];
@@ -93,9 +124,7 @@ function tokensToRecords(tokens) {
 }
 
 function makeRecords(csv) {
-  if (typeof csv !== 'string') {
-    throw new TypeError('Function "makeRecords": the argument "csv" must be string!');
-  }
+  checkCsvString(csv, 'makeRecords');
   const tokens = tokenize(csv);
   const recordSet = tokensToRecords(tokens);
   return recordSet;
@@ -108,41 +137,36 @@ function replacer(match) {
   return '\\n';
 }
 
-function checkRecords(recordSet, parameters = {}) {
-  if (!Array.isArray(recordSet)) {
-    throw new TypeError('Function \'checkRecords\': value of \'recordSet\' must be an array!');
-  } else if (recordSet.length < 1) {
-    throw new TypeError('Function \'checkRecords\': value of \'recordSet\' cannot be empty array!');
-  }
-  if (typeof parameters !== 'object' || parameters.constructor.name !== 'Object') {
-    throw new TypeError('Function \'checkRecords\': value of \'parameters\' must be an Object');
-  }
+function checkRecords(recordSet, parameters = {}, functionName = '') {
+  const stringFunctionName = functionName || 'checkRecords';
+  checkRecordSet(recordSet, stringFunctionName);
+  checkParameters(parameters, stringFunctionName);
   const withEmptyLine = parameters.withEmptyLine || false;
   const fieldCount = recordSet[0].length;
   recordSet.forEach((record, recordNo) => {
     if (record.length < 1) {
-      throw new TypeError(`Function 'checkRecords': record ${recordNo} have no fields!`);
+      throw new TypeError(`Function '${stringFunctionName}': record ${recordNo} have no fields!`);
     }
     record.forEach((field, fieldNo) => {
       if (field.length !== 4) {
-        throw new TypeError(`Function 'checkRecords': item ${fieldNo} of record ${recordNo} is not an field!`);
+        throw new TypeError(`Function '${stringFunctionName}': item ${fieldNo} of record ${recordNo} is not an field!`);
       }
       field.forEach((part, partNo) => {
         if (part.length !== 2 || typeof part[0] !== 'string' || typeof part[1] !== 'number') {
-          throw new TypeError(`Function 'checkRecords': item ${partNo} of field ${fieldNo} of record ${recordNo} is not a part of field!`);
+          throw new TypeError(`Function '${stringFunctionName}': item ${partNo} of field ${fieldNo} of record ${recordNo} is not a part of field!`);
         }
       });
     });
     if (recordNo > 0) {
       if (record.length > fieldCount) {
-        throw new TypeError(`Function 'checkRecords': record ${recordNo} has more fields than record 0!`);
+        throw new TypeError(`Function '${stringFunctionName}': record ${recordNo} has more fields than record 0!`);
       } else if (record.length < fieldCount) {
         if (recordNo < recordSet.length - 1) {
-          throw new TypeError(`Function 'checkRecords': record ${recordNo} has less fields than record 0!`);
+          throw new TypeError(`Function '${stringFunctionName}': record ${recordNo} has less fields than record 0!`);
         } else if (record.length > 1) {
-          throw new TypeError(`Function 'checkRecords': the last record ${recordNo} has less fields than record 0, but more than 1!`);
+          throw new TypeError(`Function '${stringFunctionName}': the last record ${recordNo} has less fields than record 0, but more than 1!`);
         } else if (!withEmptyLine) {
-          throw new TypeError(`Function 'checkRecords': the last record ${recordNo} has only one field, but 'withEmptyLine' is set to false!`);
+          throw new TypeError(`Function '${stringFunctionName}': the last record ${recordNo} has only one field, but 'withEmptyLine' is set to false!`);
         }
       }
     }
@@ -150,15 +174,10 @@ function checkRecords(recordSet, parameters = {}) {
   return true;
 }
 
-function checkValues(recordSet, parameters = {}) {
-  if (!Array.isArray(recordSet)) {
-    throw new TypeError('Function \'checkValues\': value of \'recordSet\' must be an array!');
-  } else if (recordSet.length < 1) {
-    throw new TypeError('Function \'checkValues\': value of \'recordSet\' cannot be empty array!');
-  }
-  if (typeof parameters !== 'object' || parameters.constructor.name !== 'Object') {
-    throw new TypeError('Function \'checkValues\': value of \'parameters\' must be an Object');
-  }
+function checkValues(recordSet, parameters = {}, functionName = '') {
+  const stringFunctionName = functionName || 'checkValues';
+  checkRecordSet(recordSet, stringFunctionName);
+  checkParameters(parameters, stringFunctionName);
   const withHeader = parameters.withHeader || false;
   const withEmptyLine = parameters.withEmptyLine || false;
   recordSet.forEach((record, recordNo) => {
@@ -167,7 +186,7 @@ function checkValues(recordSet, parameters = {}) {
         const fieldStr = replaceNl[Symbol.replace](field[0][0], replacer);
         const endStr = replaceNl[Symbol.replace](field[3][0], replacer);
         throw new TypeError(
-          `Function 'checkValues': record ${recordNo}, field ${fieldNo}: '${fieldStr}' has corrupted end '${endStr}' at position ${field[3][1]}!`,
+          `Function '${stringFunctionName}': record ${recordNo}, field ${fieldNo}: '${fieldStr}' has corrupted end '${endStr}' at position ${field[3][1]}!`,
         );
       }
     });
@@ -176,10 +195,10 @@ function checkValues(recordSet, parameters = {}) {
   if (withHeader) {
     recordSet[0].forEach((field, fieldNo) => {
       if (field[2][0] === '') {
-        throw new TypeError(`Function 'checkValues': header of field ${fieldNo} is empty!`);
+        throw new TypeError(`Function '${stringFunctionName}': header of field ${fieldNo} is empty!`);
       }
       if (field[2][0] === '""') {
-        throw new TypeError(`Function 'checkValues': header of field ${fieldNo} is escaped empty string!`);
+        throw new TypeError(`Function '${stringFunctionName}': header of field ${fieldNo} is escaped empty string!`);
       }
     });
   }
@@ -190,14 +209,17 @@ function checkValues(recordSet, parameters = {}) {
     if (firstRecord.length > 1 && lastRecord.length === 1 && withEmptyLine) {
       if (lastRecord[0][1][0] !== '\r\n' || lastRecord[0][2][0] !== '' || lastRecord[0][3][0] !== ''
           || lastRecord[0][1][1] !== 0 || lastRecord[0][2][1] !== 2 || lastRecord[0][3][1] !== 2) {
-        throw new TypeError(`Function 'checkValues': when 'withEmptyLine' is set to true, the only field of the last record ${recordSet.length - 1} is not empty!'`);
+        throw new TypeError(`Function '${stringFunctionName}': when 'withEmptyLine' is set to true, the only field of the last record ${recordSet.length - 1} is not empty!'`);
       }
     }
   }
   return true;
 }
 
-function convertValue(value, withNull, withNumbers) {
+function convertValue(value, parameters = {}) {
+  checkParameters(parameters, 'convertValue');
+  const withNumbers = parameters.withNumbers || false;
+  const withNull = parameters.withNull || false;
   if (withNumbers && !Number.isNaN(Number.parseFloat(value))) {
     if (value.indexOf('.') !== -1) {
       return Number.parseFloat(value);
@@ -215,23 +237,15 @@ function convertValue(value, withNull, withNumbers) {
 }
 
 function recordsToDataTree(recordSet, parameters = {}) {
-  if (!Array.isArray(recordSet)) {
-    throw new TypeError('Function \'checkRecords\': value of \'recordSet\' must be an array!');
-  } else if (recordSet.length < 1) {
-    throw new TypeError('Function \'checkRecords\': value of \'recordSet\' cannot be empty array!');
-  }
-  if (typeof parameters !== 'object' || parameters.constructor.name !== 'Object') {
-    throw new TypeError('Function \'checkRecords\': value of \'parameters\' must be an Object');
-  }
+  checkRecordSet(recordSet, 'recordsToDataTree');
+  checkParameters(parameters, 'recordsToDataTree');
+  checkRecords(recordSet, parameters, 'recordsToDataTree');
   const withHeader = parameters.withHeader || false;
-  const withNull = parameters.withNull || false;
-  const withNumbers = parameters.withNumbers || false;
   const withEmptyLine = parameters.withEmptyLine || false;
-  const onlyChecked = parameters.onlyChecked || false;
-  
-  checkRecords(recordSet, parameters);
-  if (onlyChecked) {
-    checkValues(recordSet, parameters);
+  const ifCheckValues = parameters.checkValues || false;
+
+  if (ifCheckValues) {
+    checkValues(recordSet, parameters, 'recordsToDataTree');
   }
 
   let filteredRecords = recordSet;
@@ -246,7 +260,7 @@ function recordsToDataTree(recordSet, parameters = {}) {
     );
   }
   const dataRecords = filteredRecords.map(
-    record => record.map(field => convertValue(field[2][0], withNull, withNumbers)),
+    record => record.map(field => convertValue(field[2][0], parameters)),
   );
   const tree = {};
   if (withHeader) {
@@ -258,21 +272,9 @@ function recordsToDataTree(recordSet, parameters = {}) {
   return tree;
 }
 
-function makeDataTree(csv, _parameters = {}) {
-  if (typeof csv !== 'string') {
-    throw TypeError('Function \'makeDataTree\': argument \'csv\' must be a string.');
-  }
-  if (typeof _parameters !== 'object' || _parameters.constructor.name !== 'Object') {
-    throw new TypeError('Function \'makeDataTree\': argument \'parameters\' must be object');
-  }
-  const parameters = {
-    withHeader: _parameters.withHeader || false,
-    withNull: _parameters.withNull || false,
-    withNumbers: _parameters.withNumbers || false,
-    withEmptyLine: _parameters.withEmptyLine || false,
-    onlyChecked: _parameters.onlyChecked || false,
-  };
-
+function makeDataTree(csv, parameters = {}) {
+  checkCsvString(csv, 'makeDataTree');
+  checkParameters(parameters, 'makeDataTree');
   const recordSet = makeRecords(csv);
   const dataTree = recordsToDataTree(recordSet, parameters);
   return dataTree;
