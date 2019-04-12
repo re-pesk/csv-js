@@ -13,7 +13,7 @@ describe('makeRecords\n', () => {
   describe('throws error\n', () => {
     it(
       'when called without argument\n',
-      () => expect(() => makeRecords()).to.throw(TypeError, 'Function "makeRecords": the argument "csv" must be string!'),
+      () => expect(() => makeRecords()).to.throw(TypeError, 'Function \'makeRecords\': value of \'csvString\' must be a string!'),
     );
   });
   describe('returns set of records that contains:\n', () => {
@@ -268,17 +268,19 @@ describe('makeDataTree\n', () => {
   describe('throws error\n', () => {
     it(
       'when called without argument\n',
-      () => expect(() => makeDataTree()).to.throw(TypeError, 'Function \'makeDataTree\': argument \'csv\' must be a string.'),
+      () => expect(() => makeDataTree()).to.throw(TypeError, 'Function \'makeDataTree\': value of \'csvString\' must be a string!'),
     );
     it(
       'when argument \'parameters\' is not object\n',
-      () => expect(() => makeDataTree('', [])).to.throw(TypeError, 'Function \'makeDataTree\': argument \'parameters\' must be object'),
+      () => expect(() => makeDataTree('', [])).to.throw(TypeError, 'Function \'makeDataTree\': value of \'parameters\' must be an Object!'),
     );
   });
   describe('creates appropriate data tree\n', () => {
     it(
-      'when argument \'csv\' equals to \'\'\n',
-      () => expect(makeDataTree('')).to.deep.equal({ records: [['']] }),
+      'when argument \'csvString\' equals to \'\'\n',
+      () => expect(
+        makeDataTree(''),
+      ).to.deep.equal({ records: [['']] }),
     );
   });
 });
