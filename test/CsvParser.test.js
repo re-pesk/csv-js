@@ -299,6 +299,50 @@ describe('checkValues\n', () => {
   });
 });
 
+describe('recordsToDataTree\n', () => {
+  describe('throws error\n', () => {
+    const testDataList = [
+      {
+        it: 'when called without argument',
+        recordSet: undefined,
+        message: 'Function \'recordsToDataTree\': value of \'recordSet\' must be an array!',
+      },
+      {
+        it: 'when argument \'recordSet\' has not valid structure',
+        recordSet: [[[['', 0], ['', 0], ['', 0], ['']]]],
+        message: 'Function \'recordsToDataTree\': item 3 of field 0 of record 0 is not a part of field!',
+      },
+      {
+        it: 'when argument \'parameters\' is not object',
+        recordSet: [[[['', 0], ['', 0], ['', 0], ['', 0]]]],
+        parameters: [],
+        message: 'Function \'recordsToDataTree\': value of \'parameters\' must be an Object!',
+      },
+      {
+        it: 'when parameter \'checkValues\' in the argument \'parameters\' is set to true and the argument \'recordSet\' has non-allowed data',
+        recordSet: [[[['a"', 0], ['', 0], ['a', 0], ['"', 1]]]],
+        parameters: { checkValues: true },
+        message: 'Function \'recordsToDataTree\': record 0, field 0: \'a"\' has corrupted end \'"\' at position 1!',
+      },
+    ];
+    testDataList.forEach((testData) => {
+      it(`${testData.it}\n`, () => {
+        const { recordSet, parameters } = testData;
+        if (!recordSet) {
+          expect(() => recordsToDataTree()).to.throw(TypeError, testData.message);
+        } else if (!parameters) {
+          expect(() => recordsToDataTree(recordSet)).to.throw(TypeError, testData.message);
+        } else {
+          expect(() => recordsToDataTree(recordSet, parameters)).to.throw(TypeError, testData.message);
+        }
+      });
+    });
+  });
+  describe('returns appropriate data tree\n', () => {
+
+  });
+});
+
 describe('makeDataTree\n', () => {
   describe('throws error\n', () => {
     it(
