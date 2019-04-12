@@ -138,11 +138,11 @@ describe('checkRecords\n', () => {
   describe('throws error\n', () => {
     describe('when it is called without arguments\n', () => {
       it(
-        'value of \'recordset\' is undefined\n',
+        'value of \'recordSet\' is undefined\n',
         () => expect(() => checkRecords()).to.throw(TypeError, 'Function \'checkRecords\': value of \'recordSet\' must be an array!'),
       );
     });
-    describe('when argument \'recordset\' gets value of a wrong type:\n', () => {
+    describe('when argument \'recordSet\' gets value of a wrong type:\n', () => {
       const testDataList = [
         {
           it: 'value is undefined\n',
@@ -164,7 +164,7 @@ describe('checkRecords\n', () => {
         );
       });
     });
-    describe('when value of \'recordset\' has a wrong structure:\n', () => {
+    describe('when value of \'recordSet\' has a wrong structure:\n', () => {
       const testDataList = [
         {
           it: 'value is empty array\n',
