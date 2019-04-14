@@ -216,7 +216,7 @@ function checkValues(recordSet, parameters = {}, functionName = '') {
   return true;
 }
 
-function convertValue(value, parameters = {}) {
+function convertValue(value, parameters) {
   checkParameters(parameters, 'convertValue');
   const withNumbers = parameters.withNumbers || false;
   const withNull = parameters.withNull || false;
