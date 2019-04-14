@@ -38,22 +38,6 @@ const outerQuotesPattern = new RegExp(OUTER_QUOTES, 'g');
 const innerQuotesPattern = new RegExp(INNER_QUOTES, 'g');
 const emptyValuePattern = new RegExp(EMPTY_PATTERN, 'g');
 
-function splitTokenToParts(token) {
-  const recPattern = new RegExp(RECORD_PATTERN, 'g');
-  const headPattern = new RegExp(HEAD, 'g');
-  const bodyPattern = new RegExp(HEAD_BODY, 'g');
-  const strings = recPattern.exec(token[0]);
-  headPattern.exec(token[0]);
-  bodyPattern.exec(token[0]);
-  const parts = [
-    token,
-    [strings[1], 0],
-    [strings[2], headPattern.lastIndex],
-    [strings[3], bodyPattern.lastIndex],
-  ];
-  return parts;
-}
-
 function checkCsvString(csvString, stringFunctionName) {
   if (typeof csvString !== 'string') {
     throw new TypeError(`Function '${stringFunctionName}': value of 'csvString' must be a string!`);
@@ -83,6 +67,22 @@ function checkParameters(parameters, stringFunctionName) {
       throw new TypeError(`Function '${stringFunctionName}': value of parameter '${name}' is not boolean!`);
     }
   });
+}
+
+function splitTokenToParts(token) {
+  const recPattern = new RegExp(RECORD_PATTERN, 'g');
+  const headPattern = new RegExp(HEAD, 'g');
+  const bodyPattern = new RegExp(HEAD_BODY, 'g');
+  const strings = recPattern.exec(token[0]);
+  headPattern.exec(token[0]);
+  bodyPattern.exec(token[0]);
+  const parts = [
+    token,
+    [strings[1], 0],
+    [strings[2], headPattern.lastIndex],
+    [strings[3], bodyPattern.lastIndex],
+  ];
+  return parts;
 }
 
 function tokenize(csvString) {
@@ -282,5 +282,5 @@ function makeDataTree(csvString, parameters = {}) {
 
 // eslint-disable-next-line import/prefer-default-export
 export {
-  makeRecords, checkRecords, checkValues, recordsToDataTree, makeDataTree,
+  makeRecords, checkParameters, checkRecords, checkValues, recordsToDataTree, makeDataTree,
 };
