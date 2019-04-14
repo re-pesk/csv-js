@@ -54,33 +54,33 @@ function splitTokenToParts(token) {
   return parts;
 }
 
-function checkCsvString(csvString, functionName) {
+function checkCsvString(csvString, stringFunctionName) {
   if (typeof csvString !== 'string') {
-    throw new TypeError(`Function '${functionName}': value of 'csvString' must be a string!`);
+    throw new TypeError(`Function '${stringFunctionName}': value of 'csvString' must be a string!`);
   }
 }
 
-function checkRecordSet(recordSet, functionName) {
+function checkRecordSet(recordSet, stringFunctionName) {
   if (!Array.isArray(recordSet)) {
-    throw new TypeError(`Function '${functionName}': value of 'recordSet' must be an array!`);
+    throw new TypeError(`Function '${stringFunctionName}': value of 'recordSet' must be an array!`);
   } else if (recordSet.length < 1) {
-    throw new TypeError(`Function '${functionName}': value of 'recordSet' cannot be empty array!`);
+    throw new TypeError(`Function '${stringFunctionName}': value of 'recordSet' cannot be empty array!`);
   }
 }
 
 const allowedParameterList = ['withHeader', 'withNull', 'withNumbers', 'withEmptyLine', 'checkValues'];
 
-function checkParameters(parameters, functionName) {
+function checkParameters(parameters, stringFunctionName) {
   if (typeof parameters !== 'object'
       || parameters.constructor.name !== 'Object') {
-    throw new TypeError(`Function '${functionName}': value of 'parameters' must be an Object!`);
+    throw new TypeError(`Function '${stringFunctionName}': value of 'parameters' must be an Object!`);
   }
   Object.getOwnPropertyNames(parameters).forEach((name) => {
     if (!allowedParameterList.includes(name)) {
-      TypeError(`Function '${functionName}': object int the 'parameters' argument includes a member '${name}' which is not included in the list of allowed parameters!`);
+      TypeError(`Function '${stringFunctionName}': object int the 'parameters' argument includes a member '${name}' which is not included in the list of allowed parameters!`);
     }
     if (typeof parameters[name] !== 'boolean') {
-      TypeError(`Function '${functionName}': value of parameter '${name}' is not boolean!`);
+      TypeError(`Function '${stringFunctionName}': value of parameter '${name}' is not boolean!`);
     }
   });
 }
