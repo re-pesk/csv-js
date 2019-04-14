@@ -281,6 +281,6 @@ function makeDataTree(csvString, parameters = {}) {
 }
 
 // eslint-disable-next-line import/prefer-default-export
-export {
+module.exports = {
   makeRecords, checkRecords, checkValues, recordsToDataTree, makeDataTree,
 };

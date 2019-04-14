@@ -32,6 +32,6 @@ function indent(input, spaceInt) {
 }
 
 // eslint-disable-next-line import/prefer-default-export
-export {
+module.exports = {
   escapeNl, clearString, indent, indentString, indentJson,
 };
