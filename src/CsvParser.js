@@ -77,10 +77,10 @@ function checkParameters(parameters, stringFunctionName) {
   }
   Object.getOwnPropertyNames(parameters).forEach((name) => {
     if (!allowedParameterList.includes(name)) {
-      TypeError(`Function '${stringFunctionName}': object int the 'parameters' argument includes a member '${name}' which is not included in the list of allowed parameters!`);
+      throw new TypeError(`Function '${stringFunctionName}': the object int the 'parameters' argument has a member '${name}' which is not included in the list of allowed parameters!`);
     }
     if (typeof parameters[name] !== 'boolean') {
-      TypeError(`Function '${stringFunctionName}': value of parameter '${name}' is not boolean!`);
+      throw new TypeError(`Function '${stringFunctionName}': value of parameter '${name}' is not boolean!`);
     }
   });
 }
@@ -130,13 +130,6 @@ function makeRecords(csvString) {
   return recordSet;
 }
 
-function replacer(match) {
-  if (match === '\r') {
-    return '\\r';
-  }
-  return '\\n';
-}
-
 function checkRecords(recordSet, parameters = {}, functionName = '') {
   const stringFunctionName = functionName || 'checkRecords';
   checkRecordSet(recordSet, stringFunctionName);
@@ -174,6 +167,13 @@ function checkRecords(recordSet, parameters = {}, functionName = '') {
   return true;
 }
 
+function replacer(match) {
+  if (match === '\r') {
+    return '\\r';
+  }
+  return '\\n';
+}
+
 function checkValues(recordSet, parameters = {}, functionName = '') {
   const stringFunctionName = functionName || 'checkValues';
   checkRecordSet(recordSet, stringFunctionName);
@@ -195,7 +195,7 @@ function checkValues(recordSet, parameters = {}, functionName = '') {
   if (withHeader) {
     recordSet[0].forEach((field, fieldNo) => {
       if (field[2][0] === '') {
-        throw new TypeError(`Function '${stringFunctionName}': header of field ${fieldNo} is empty!`);
+        throw new TypeError(`Function '${stringFunctionName}': header of field ${fieldNo} is non-escaped empty string!`);
       }
       if (field[2][0] === '""') {
         throw new TypeError(`Function '${stringFunctionName}': header of field ${fieldNo} is escaped empty string!`);
