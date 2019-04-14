@@ -3,7 +3,7 @@ const { describe, it } = require('mocha');
 const { expect } = require('chai');
 const {
   makeRecords, checkRecords, checkValues, recordsToDataTree, makeDataTree,
-} = require('../src/CsvParser');
+} = require('../src/CsvParsing');
 const {
   escapeNl, indent, indentString, indentJson,
 } = require('../src/helpers');
@@ -291,7 +291,8 @@ describe('recordsToDataTree\n', () => {
         } else if (!parameters) {
           expect(() => recordsToDataTree(recordSet)).to.throw(TypeError, testData.message);
         } else {
-          expect(() => recordsToDataTree(recordSet, parameters)).to.throw(TypeError, testData.message);
+          expect(() => recordsToDataTree(recordSet, parameters))
+            .to.throw(TypeError, testData.message);
         }
       });
     });
@@ -439,75 +440,3 @@ describe('makeDataTree\n', () => {
     });
   });
 });
-
-/*
-  when parameter 'withHeader' equals to true and csv string
-    has first record with no empty fields
-  when parameter 'withNull' equals to true and csv string
-    has empty non-escaped field, escaped field and field with double comma inside
-  when parameter 'withEmptyLine' equals to true and scv string
-    has first records with several fields and record separator at very end of string
-        {
-          it: 'has record with two fields and record separator at the end of string',
-          csv: 'a,b\r\n',
-          expected: { records: [['a', 'b'], ['']] },
-        },
-  when parameter 'ignoreCorruptedData equals to true and csv string'
-    has a non-escaped field corrupted at the end of it
-    has a escaped field corrupted at the end of it
-        {
-          it: 'has a non-escaped field corrupted at the end of it',
-          csv: 'a"',
-          expected: { records: [['a']] },
-        },
-        {
-          it: 'has a escaped field corrupted at the end of it',
-          csv: '"a"b',
-          expected: { records: [['"a"']] },
-        },
-
-*/
-
-// it(
-//   'when argument \'csvString\' equals to \'\'\n',
-//   () => expect(
-//     makeDataTree(''),
-//   ).to.deep.equal({ records: [['']] }),
-// );
-// const testDataList = [
-//   {
-//     it: 'when called without argument',
-//     recordSet: undefined,
-//     message: 'Function \'recordsToDataTree\': value of \'recordSet\' must be an array!',
-//   },
-//   {
-//     it: 'when argument \'recordSet\' has not valid structure',
-//     recordSet: [[[['', 0], ['', 0], ['', 0], ['']]]],
-//     message: 'Function \'recordsToDataTree\': item 3 of field 0 of record 0 is not a part of field!',
-//   },
-//   {
-//     it: 'when argument \'parameters\' is not object',
-//     recordSet: [[[['', 0], ['', 0], ['', 0], ['', 0]]]],
-//     parameters: [],
-//     message: 'Function \'recordsToDataTree\': value of \'parameters\' must be an Object!',
-//   },
-//   {
-//     it: 'when parameter \'checkValues\' in the argument \'parameters\' is set to true and the argument \'recordSet\' has non-allowed data',
-//     recordSet: [[[['a"', 0], ['', 0], ['a', 0], ['"', 1]]]],
-//     parameters: { checkValues: true },
-//     message: 'Function \'recordsToDataTree\': record 0, field 0: \'a"\' has corrupted end \'"\' at position 1!',
-//   },
-// ];
-// testDataList.forEach((testData) => {
-//   it(`${testData.it}\n`, () => {
-//     const { recordSet, parameters } = testData;
-//     if (!recordSet) {
-//       expect(() => recordsToDataTree()).to.throw(TypeError, testData.message);
-//     } else if (!parameters) {
-//       expect(() => recordsToDataTree(recordSet)).to.throw(TypeError, testData.message);
-//     } else {
-//       expect(() => recordsToDataTree(recordSet, parameters))
-//         .to.throw(TypeError, testData.message);
-//     }
-//   });
-// });
