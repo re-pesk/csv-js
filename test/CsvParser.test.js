@@ -342,13 +342,9 @@ describe('makeDataTree\n', () => {
       'when argument \'parameters\' is not object\n',
       () => expect(() => makeDataTree('', [])).to.throw(TypeError, 'Function \'makeDataTree\': value of \'parameters\' must be an Object!'),
     );
-  });
-  describe('creates appropriate data tree\n', () => {
     it(
-      'when argument \'csvString\' equals to \'\'\n',
-      () => expect(
-        makeDataTree(''),
-      ).to.deep.equal({ records: [['']] }),
+      'when csv string has corrupted records and fields and parameter \'checkValues\' equals to true\n',
+      () => expect(() => makeDataTree('a"', { checkValues: true })).to.throw(TypeError, 'Function \'recordsToDataTree\': record 0, field 0: \'a"\' has corrupted end \'"\' at position 1!'),
     );
   });
 });
