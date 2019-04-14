@@ -1,13 +1,12 @@
 /* eslint-disable camelcase */
-import { describe, it } from 'mocha';
-import { expect } from 'chai';
-import {
-  makeRecords, checkRecords, checkValues, recordsToDataTree, makeDataTree 
-} from '../src/CsvParser';
-
-import {
+const { describe, it } = require('mocha');
+const { expect } = require('chai');
+const {
+  makeRecords, checkRecords, checkValues, recordsToDataTree, makeDataTree,
+} = require('../src/CsvParser');
+const {
   escapeNl, indent, indentString, indentJson,
-} from '../src/helpers';
+} = require('../src/helpers');
 
 describe('makeRecords\n', () => {
   describe('throws error\n', () => {
@@ -221,6 +220,11 @@ describe('checkRecords\n', () => {
 
 describe('checkValues\n', () => {
   describe('throws error\n', () => {
+    describe('when function is called without arguments\n', () => {
+      it('value of \'recordSet\' is undefined\n', () => {
+        expect(() => checkValues()).to.throw(TypeError, 'Function \'checkValues\': value of \'recordSet\' must be an array!');
+      });
+    });
     describe('when records contains wrong data:\n', () => {
       const testDataList = [
         {
