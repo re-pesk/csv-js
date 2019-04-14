@@ -344,16 +344,7 @@ describe('makeDataTree\n', () => {
     });
   });
   describe('parses csv string and creates appropriate data tree\n', () => {
-    /*
-      when all parameters are equal to false and csv string
-        is empty
-        has one field
-        has three fields
-        has three records each with one field
-        has one escaped field
-        has two records and each of them has two fields
-        has escaped field with field and record separators and double comma inside
-    */
+
     describe(`when all parameters are equal to false\n${indent('  ', 4)}and csv string:\n`, () => {
       const testDataList = [
         {
@@ -410,14 +401,8 @@ describe('makeDataTree\n', () => {
         expect(makeDataTree(',"",""""', { withNull: true })).to.deep.equal(expected);
       });
     });
-    describe(`when parameter 'withNull' equals to true\n${indent('  ', 4)}and csv string:\n`, () => {
-      it('has empty non-escaped field, escaped field and field with double comma inside\n', () => {
-        const expected = { records: [[null, '', '"']] };
-        expect(makeDataTree(',"",""""', { withNull: true })).to.deep.equal(expected);
-      });
-    });
     describe(`when parameter 'withNumber' equals to true\n${indent('  ', 4)}and csv string:\n`, () => {
-      it('has fields, consisting of digits and point only\n', () => {
+      it('has fields, consisting of digits and one point only\n', () => {
         const expected = { records: [[1, 1.1]] };
         expect(makeDataTree('1,1.1', { withNumbers: true })).to.deep.equal(expected);
       });
