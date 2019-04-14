@@ -6,7 +6,7 @@ import {
 } from '../src/CsvParser';
 
 import {
-  escapeNL, indent, indentString, indentJson,
+  escapeNl, indent, indentString, indentJson,
 } from '../src/helpers';
 
 describe('makeRecords\n', () => {
@@ -114,7 +114,7 @@ describe('makeRecords\n', () => {
     };
     testDataList.makeRecords.forEach((testData) => {
       it(
-        `${testData.it}\n${indent('  ', 5)}when argument 'csv' is '${escapeNL(testData.csv)}'\n`,
+        `${testData.it}\n${indent('  ', 5)}when argument 'csv' is '${escapeNl(testData.csv)}'\n`,
         () => expect(makeRecords(testData.csv)).to.deep.equal(testData.records),
       );
     });
@@ -238,7 +238,7 @@ describe('checkValues\n', () => {
         },
       ];
       testDataList.forEach((testData) => {
-        const escCsv = escapeNL(testData.csv);
+        const escCsv = escapeNl(testData.csv);
         const records = makeRecords(testData.csv);
         const parameters = { withEmptyLine: testData.withEmptyLine };
         it(`${testData.it}\n${indentString(`csv == '${escCsv}' ->\nrecords ==`, 6)}\n${indentJson(records, 7)}\n`, () => {
@@ -273,7 +273,7 @@ describe('checkValues\n', () => {
         },
       ];
       testDataList.forEach((testData) => {
-        const escCsv = escapeNL(testData.csv);
+        const escCsv = escapeNl(testData.csv);
         const records = makeRecords(testData.csv);
         const parameters = { withEmptyLine: testData.withEmptyLine };
         it(`${testData.it}\n${indentString(`csv == '${escCsv}' ->\nrecords ==`, 6)}\n${indentJson(records, 7)}\n`, () => {

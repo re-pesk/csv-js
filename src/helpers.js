@@ -1,4 +1,4 @@
-function escapeNL(input) {
+function escapeNl(input) {
   return input.replace(/\r/g, '\\r').replace(/\n/g, '\\n');
 }
 
@@ -7,7 +7,7 @@ function clearString(input) {
     .replace(/,(?=\d+\]|\[)/g, ', ')
     .replace(/(?<!\\)"/g, '\'')
     .replace(/\\"/g, '"');
-  return escapeNL(result);
+  return escapeNl(result);
 }
 
 function indentString(input, spaceInt) {
@@ -33,5 +33,5 @@ function indent(input, spaceInt) {
 
 // eslint-disable-next-line import/prefer-default-export
 export {
-  escapeNL, clearString, indent, indentString, indentJson,
+  escapeNl, clearString, indent, indentString, indentJson,
 };
