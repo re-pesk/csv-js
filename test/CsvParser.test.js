@@ -308,9 +308,8 @@ describe('recordsToDataTree\n', () => {
         message: 'Function \'recordsToDataTree\': value of \'parameters\' must be an Object!',
       },
       {
-        it: 'when parameter \'checkValues\' in the argument \'parameters\' is set to true and the argument \'recordSet\' has non-allowed data',
+        it: 'when the argument \'recordSet\' has non-allowed data',
         recordSet: [[[['a"', 0], ['', 0], ['a', 0], ['"', 1]]]],
-        parameters: { checkValues: true },
         message: 'Function \'recordsToDataTree\': record 0, field 0: \'a"\' has corrupted end \'"\' at position 1!',
       },
     ];

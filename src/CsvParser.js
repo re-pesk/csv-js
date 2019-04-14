@@ -68,7 +68,7 @@ function checkRecordSet(recordSet, stringFunctionName) {
   }
 }
 
-const allowedParameterList = ['withHeader', 'withNull', 'withNumbers', 'withEmptyLine', 'checkValues'];
+const allowedParameterList = ['withHeader', 'withNull', 'withNumbers', 'withEmptyLine', 'ignoreCorruptedData'];
 
 function checkParameters(parameters, stringFunctionName) {
   if (typeof parameters !== 'object'
@@ -242,9 +242,9 @@ function recordsToDataTree(recordSet, parameters = {}) {
   checkRecords(recordSet, parameters, 'recordsToDataTree');
   const withHeader = parameters.withHeader || false;
   const withEmptyLine = parameters.withEmptyLine || false;
-  const ifCheckValues = parameters.checkValues || false;
+  const ignoreCorruptedData = parameters.ignoreCorruptedData || false;
 
-  if (ifCheckValues) {
+  if (!ignoreCorruptedData) {
     checkValues(recordSet, parameters, 'recordsToDataTree');
   }
 
