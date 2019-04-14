@@ -22,7 +22,7 @@ describe('makeRecords\n', () => {
         {
           csv: '',
           it: '1 record x 1 field',
-          records: [
+          expected: [
             [
               [['', 0], ['', 0], ['', 0], ['', 0]],
             ],
@@ -31,7 +31,7 @@ describe('makeRecords\n', () => {
         {
           csv: '""',
           it: '1 record x 1 field with quoted value',
-          records: [
+          expected: [
             [
               [['""', 0], ['', 0], ['""', 0], ['', 2]],
             ],
@@ -40,7 +40,7 @@ describe('makeRecords\n', () => {
         {
           csv: ',',
           it: '1 record x 2 fields',
-          records: [
+          expected: [
             [
               [['', 0], ['', 0], ['', 0], ['', 0]],
               [[',', 0], [',', 0], ['', 1], ['', 1]],
@@ -50,7 +50,7 @@ describe('makeRecords\n', () => {
         {
           csv: '","',
           it: '1 record x 1 field with quoted value',
-          records: [
+          expected: [
             [
               [['","', 0], ['', 0], ['","', 0], ['', 3]],
             ],
@@ -59,7 +59,7 @@ describe('makeRecords\n', () => {
         {
           csv: '\r\n',
           it: '2 records x 1 field',
-          records: [
+          expected: [
             [
               [['', 0], ['', 0], ['', 0], ['', 0]],
             ], [
@@ -70,7 +70,7 @@ describe('makeRecords\n', () => {
         {
           csv: '\r\n\r\n',
           it: '3 records x 1 field',
-          records: [
+          expected: [
             [[['', 0], ['', 0], ['', 0], ['', 0]]],
             [[['\r\n', 0], ['\r\n', 0], ['', 2], ['', 2]]],
             [[['\r\n', 2], ['\r\n', 0], ['', 2], ['', 2]]],
@@ -79,14 +79,14 @@ describe('makeRecords\n', () => {
         {
           csv: '"\r\n\r\n"',
           it: '1 record x 1 field with quoted value',
-          records: [
+          expected: [
             [[['"\r\n\r\n"', 0], ['', 0], ['"\r\n\r\n"', 0], ['', 6]]],
           ],
         },
         {
           csv: ',\r\n',
           it: '1 record x 2 fields + 1 record x 1 field',
-          records: [
+          expected: [
             [
               [['', 0], ['', 0], ['', 0], ['', 0]],
               [[',', 0], [',', 0], ['', 1], ['', 1]],
@@ -97,7 +97,7 @@ describe('makeRecords\n', () => {
         {
           csv: '\n\r"abc"\r\r\n',
           it: '1 record x 1 corrupted field + 1 record x 1 normal field',
-          records: [
+          expected: [
             [[['\n\r"abc"\r', 0], ['', 0], ['\n\r', 0], ['"abc"\r', 2]]],
             [[['\r\n', 8], ['\r\n', 0], ['', 2], ['', 2]]],
           ],
@@ -105,7 +105,7 @@ describe('makeRecords\n', () => {
         {
           csv: '"abc"\n\r\r\n\n\r"abc"',
           it: '2 records x 1 corrupted field',
-          records: [
+          expected: [
             [[['"abc"\n\r', 0], ['', 0], ['"abc"', 0], ['\n\r', 5]]],
             [[['\r\n\n\r"abc"', 7], ['\r\n', 0], ['\n\r', 2], ['"abc"', 4]]],
           ],
@@ -115,7 +115,9 @@ describe('makeRecords\n', () => {
     testDataList.makeRecords.forEach((testData) => {
       it(
         `${testData.it}\n${indent('  ', 5)}when argument 'csv' is '${escapeNl(testData.csv)}'\n`,
-        () => expect(makeRecords(testData.csv)).to.deep.equal(testData.records),
+        () => {
+          expect(makeRecords(testData.csv)).to.deep.equal(testData.expected);
+        },
       );
     });
   });
