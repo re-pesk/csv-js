@@ -68,7 +68,7 @@ Funkcijos argumentai:
       - jeigu withNull === true, sugeneruotame duomenų medyje visi tušti laukai be kabučių verčiami į null, išorinės kabutės pašalinamos, o vidinės dvigubos kabutės verčiamos viengubomis;
       - jeigu withNumbers === true, sugeneruotame duomenų medyje visų laikų rėikšmės, sudarytos tik iš skaitmenų, verčiamos į skaičius;
       - jeigu withEmptyLine === true, generuojama duomenų medžio šaka tuo atveju, kai paskutinis recordSet'o įrašas turi vienintelį tuščią lauką, t.y. csv eilutė baigiasi CrLf;
-      - jeigu ignoreCorruptedValues === true, korumpuoti duomenys ignoruojami, priešingu atveju klaida generuojama kievienu visda, kai csv lauke aptinkami korumpuoti duomenys.
+      - jeigu ignoreCorruptedValues === true, korumpuoti duomenys ignoruojami, priešingu atveju klaida generuojama visada, kai csv lauke aptinkami korumpuoti duomenys.
 
 makeDataTree(csvString : string, parameters = {}) - generuoja duomenų medį iš tesktinės eilutės pagal 'parameters' nustatymus.
 Funkcijos argumentai: 
@@ -78,4 +78,4 @@ Funkcijos argumentai:
       - jeigu withNull === true, sugeneruotame duomenų medyje visi tušti laukai be kabučių verčiami į null, išorinės kabutės pašalinamos, o vidinės dvigubos kabutės verčiamos viengubomis;
       - jeigu withNumbers === true, sugeneruotame duomenų medyje visų laikų rėikšmės, sudarytos tik iš skaitmenų, verčiamos į skaičius;
       - jeigu withEmptyLine === true, generuojama duomenų medžio šaka tuo atveju, kai paskutinis recordSet'o įrašas turi vienintelį tuščią lauką, t.y. csv eilutė baigiasi CrLf;
-      - jeigu ignoreCorruptedValues === true, korumpuoti duomenys ignoruojami, priešingu atveju klaida generuojama kievienu visda, kai csv lauke aptinkami korumpuoti duomenys.
+      - jeigu ignoreCorruptedValues === true, korumpuoti duomenys ignoruojami, priešingu atveju klaida generuojama visada, kai csv lauke aptinkami korumpuoti duomenys.
