@@ -344,7 +344,6 @@ describe('makeDataTree\n', () => {
     });
   });
   describe('parses csv string and creates appropriate data tree\n', () => {
-
     describe(`when all parameters are equal to false\n${indent('  ', 4)}and csv string:\n`, () => {
       const testDataList = [
         {

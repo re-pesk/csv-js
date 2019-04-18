@@ -5,7 +5,6 @@ const {
 // Constructor
 
 function CsvParser(_parameters = {}) {
-  checkParameters(_parameters, 'CsvParser');
   const privateParameters = Object.seal({
     withHeader: false,
     withNull: false,
@@ -15,6 +14,7 @@ function CsvParser(_parameters = {}) {
   });
 
   function setProperties(parameters) {
+    checkParameters(parameters, 'CsvParser');
     const names = Object.getOwnPropertyNames(parameters);
     names.forEach((name) => {
       privateParameters[name] = parameters[name];
