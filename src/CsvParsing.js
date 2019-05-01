@@ -77,7 +77,7 @@ function splitTokenToParts(token) {
   headPattern.exec(token[0]);
   bodyPattern.exec(token[0]);
   const parts = [
-    token,
+    [token[0], token[1]],
     [strings[1], 0],
     [strings[2], headPattern.lastIndex],
     [strings[3], bodyPattern.lastIndex],
