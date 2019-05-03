@@ -111,3 +111,25 @@ Funkcijos argumentai:
   * jeigu withNumbers === true, sugeneruotame duomenų medyje visų laikų rėikšmės, sudarytos tik iš skaitmenų, verčiamos į skaičius;
   * jeigu withEmptyLine === true, generuojama duomenų medžio šaka tuo atveju, kai paskutinis recordSet'o įrašas turi vienintelį tuščią lauką, t.y. csv eilutė baigiasi CrLf;
   * jeigu ignoreCorruptedValues === true, korumpuoti duomenys ignoruojami, priešingu atveju klaida generuojama visada, kai csv lauke aptinkami korumpuoti duomenys.
+
+### Programmos vykdymas
+
+1. Suinstaliuoti *node.js*, *npm* ir *git*.
+2. Klonuoti repozitoriją į lokalų diską:
+  ~~~
+  git clone https://github.com/re-pe/csv-js.git
+  ~~~
+3. Repozitorijos kataloge įvykdyti komandą, instaliuojančią reikalingus paketus:
+  ~~~
+  cd csv-js
+  npm install
+  ~~~
+4. Paleisti testus:
+  ~~~
+  npm test
+  ~~~
+5. Paleisti programą:
+  ~~~
+  npm start
+  ~~~
+  
