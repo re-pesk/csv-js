@@ -81,36 +81,40 @@ Lauko dalys yra tokios:
 **ckeckRecords(recordSet: array, parameters := {}, functionName := '')** - tikrina, ar įrašų masyvas turi teisingą struktūrą. 
 Funkcijos argumentai: 
 1. recordSet - privalomas įrašų masyvas 
-2. parameters - neprivalomas { withEmptyLine: false }; jeigu parametras yra true, klaida nėra generuojama tuo atveju, kai paskutinis recordSet'o įrašas turi vienintelį tuščią lauką, t.y. csv eilutė baigiasi CrLf,
+2. parameters - neprivalomas { preserveEmptyLine: false }; jeigu parametras yra true, klaida nėra generuojama tuo atveju, kai paskutinis recordSet'o įrašas turi vienintelį tuščią lauką, t.y. csv eilutė baigiasi CrLf,
 3. functionName - neprivalomas funkcijos, kurioje inicijuota patikra, pavadinimas; jeigu parametras tuščias, klaidos pranešimuose nurodoma funkcija 'checkRecords'.  
 
-**checkValues(recordSet array, parameters := {}, functionName := '')** - tikrina, ar įrašų masyvo laukai nėra korumpuoti.
+**checkValues(recordSet array, parameters := {}, functionName := '')** - tikrina, ar įrašų masyvo laukuose nėra klaidingų simbolių.
+Lauke negali būti:
+1. dvigubų kabučių, jeigu laukas prasideda kitu simboliu, nei dvigubos kabutės;
+2. jokių simbolių po antrųjų dvigubų kabučių, prieš kurias nėra kairinio brūkšnio (angl. *backslash*), jeigu laukas prasideda dvigubomis kabutėmis.
+   
 Funkcijos argumentai:
 1. recordSet - privalomas įrašų masyvas,
-2. parameters - neprivalomas { withHeader: false, withEmptyLine: false }: 
-  * jeigu withHeader === true, tikrinama ar pirmojo įrašo laukai nėra tušti; 
-  * jeigu withEmptyLine === true, klaida nėra generuojama tuo atveju, kai paskutinis recordSet'o įrašas turi vienintelį tuščią lauką, t.y. csv eilutė baigiasi CrLf,
+2. parameters - neprivalomas { hasHeader: false, preserveEmptyLine: false }: 
+  * jeigu hasHeader === true, tikrinama ar pirmojo įrašo laukai nėra tušti; 
+  * jeigu preserveEmptyLine === true, klaida nėra generuojama tuo atveju, kai paskutinis recordSet'o įrašas turi vienintelį tuščią lauką, t.y. csv eilutė baigiasi CrLf,
 3. functionName - neprivalomas funkcijos, kurioje inicijuota patikra, pavadinimas; jeigu parametras tuščias, klaidos pranešimuose nurodoma funkcija 'checkValues'.  
 
 **recordsToDataTree(recordSet : array, parameters = {})** - generuoja duomenų medį iš įrašų rinkinio pagal 'parameters' nustatymus, jeigu 'recordSet' argumentas turi teisingus duomenis.
 Funkcijos argumentai:
 1. recordSet - įrašų masyvas (privalomas),
-2. parameters - neprivalomas { withHeader: false, withNull: false, withNumbers: false, withEmptyLine: false, ignoreCorruptedValues: false }:
-  * jeigu withHeader === true, sugeneruotas duomenų medis turi atskirą šaką 'header', į kurią perkeliamas pirmasis įrašas;
-  * jeigu withNull === true, sugeneruotame duomenų medyje visi tušti laukai be kabučių verčiami į null, išorinės kabutės pašalinamos, o vidinės dvigubos kabutės verčiamos viengubomis;
-  * jeigu withNumbers === true, sugeneruotame duomenų medyje visų laikų rėikšmės, sudarytos tik iš skaitmenų, verčiamos į skaičius;
-  * jeigu withEmptyLine === true, generuojama duomenų medžio šaka tuo atveju, kai paskutinis recordSet'o įrašas turi vienintelį tuščią lauką, t.y. csv eilutė baigiasi CrLf;
-  * jeigu ignoreCorruptedValues === true, korumpuoti duomenys ignoruojami, priešingu atveju klaida generuojama visada, kai csv lauke aptinkami korumpuoti duomenys.
+2. parameters - neprivalomas { hasHeader: false, convertToNull: false, convertToNumber: false, preserveEmptyLine: false, ignoreInvalidChars: false }:
+  * jeigu hasHeader === true, sugeneruotas duomenų medis turi atskirą šaką 'header', į kurią perkeliamas pirmasis įrašas;
+  * jeigu convertToNull === true, sugeneruotame duomenų medyje visi tušti laukai be kabučių verčiami į null, išorinės kabutės pašalinamos, o vidinės dvigubos kabutės verčiamos viengubomis;
+  * jeigu convertToNumber === true, sugeneruotame duomenų medyje visų laukų reikšmės, sudarytos tik iš skaitmenų, verčiamos į skaičius;
+  * jeigu preserveEmptyLine === true, generuojama duomenų medžio šaka tuo atveju, kai paskutinis recordSet'o įrašas turi vienintelį tuščią lauką, t.y. csv eilutė baigiasi CrLf;
+  * jeigu ignoreInvalidChars === true, lauko reikšmė generuojama iš leidžiamų simbolių, klaidingus simbolius ignoruojant, priešingu atveju klaida generuojama visada, kai csv lauke aptinkami klaidingi simboliai.
 
 **makeDataTree(csvString : string, parameters = {})** - generuoja duomenų medį iš tekstinės eilutės pagal 'parameters' nustatymus.
 Funkcijos argumentai: 
 1. csvString - privaloma csv teksto eilutė.
-2. parameters - { withHeader: false, withNull: false, withNumbers: false, withEmptyLine: false, ignoreCorruptedValues: false }:
-  * jeigu withHeader === true, sugeneruotas duomenų medis turi atskirą šaką 'header', į kurią perkeliamas pirmasis įrašas;
-  * jeigu withNull === true, sugeneruotame duomenų medyje visi tušti laukai be kabučių verčiami į null, išorinės kabutės pašalinamos, o vidinės dvigubos kabutės verčiamos viengubomis;
-  * jeigu withNumbers === true, sugeneruotame duomenų medyje visų laikų rėikšmės, sudarytos tik iš skaitmenų, verčiamos į skaičius;
-  * jeigu withEmptyLine === true, generuojama duomenų medžio šaka tuo atveju, kai paskutinis recordSet'o įrašas turi vienintelį tuščią lauką, t.y. csv eilutė baigiasi CrLf;
-  * jeigu ignoreCorruptedValues === true, korumpuoti duomenys ignoruojami, priešingu atveju klaida generuojama visada, kai csv lauke aptinkami korumpuoti duomenys.
+2. parameters - { hasHeader: false, convertToNull: false, convertToNumber: false, preserveEmptyLine: false, ignoreInvalidChars: false }:
+  * jeigu hasHeader === true, sugeneruotas duomenų medis turi atskirą šaką 'header', į kurią perkeliamas pirmasis įrašas;
+  * jeigu convertToNull === true, sugeneruotame duomenų medyje visi tušti laukai be kabučių verčiami į null, išorinės kabutės pašalinamos, o vidinės dvigubos kabutės verčiamos viengubomis;
+  * jeigu convertToNumber === true, sugeneruotame duomenų medyje visų laukų reikšmės, sudarytos tik iš skaitmenų, verčiamos į skaičius;
+  * jeigu preserveEmptyLine === true, generuojama duomenų medžio šaka tuo atveju, kai paskutinis recordSet'o įrašas turi vienintelį tuščią lauką, t.y. csv eilutė baigiasi CrLf;
+  * jeigu ignoreInvalidChars === true, lauko reikšmė generuojama iš leidžiamų simbolių, klaidingus simbolius ignoruojant, priešingu atveju klaida generuojama visada, kai csv lauke aptinkami klaidingi simboliai.
 
 ### Programmos vykdymas
 

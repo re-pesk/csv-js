@@ -12,7 +12,7 @@ zzz,,""\r
 ,3,\r
 `;
 // const csv = '"abc"ooo,bcd,12+-\r\n"bcd",,xxx=!\r\n';
-const csvParser = CsvParser({ withHeader: true, withEmptyLine: true, ignoreCorruptedData: true });
+const csvParser = CsvParser({ hasHeader: true, preserveEmptyLine: true, ignoreInvalidChars: true });
 
 console.log('csvParser.constructor.name ===', `'${csvParser.constructor.name}'\n`);
 console.log('csvParser.parameters ==='); console.log(csvParser.parameters); console.log();

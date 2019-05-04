@@ -52,7 +52,7 @@ function checkRecordSet(recordSet, stringFunctionName) {
   }
 }
 
-const allowedParameterList = ['withHeader', 'withNull', 'withNumbers', 'withEmptyLine', 'ignoreCorruptedData'];
+const allowedParameterList = ['hasHeader', 'convertToNull', 'convertToNumber', 'preserveEmptyLine', 'ignoreInvalidChars'];
 
 function checkParameters(parameters, stringFunctionName) {
   if (typeof parameters !== 'object'
@@ -134,7 +134,7 @@ function checkRecords(recordSet, parameters = {}, functionName = '') {
   const stringFunctionName = functionName || 'checkRecords';
   checkRecordSet(recordSet, stringFunctionName);
   checkParameters(parameters, stringFunctionName);
-  const withEmptyLine = parameters.withEmptyLine || false;
+  const preserveEmptyLine = parameters.preserveEmptyLine || false;
   const fieldCount = recordSet[0].length;
   recordSet.forEach((record, recordNo) => {
     if (record.length < 1) {
@@ -158,8 +158,8 @@ function checkRecords(recordSet, parameters = {}, functionName = '') {
           throw new TypeError(`Function '${stringFunctionName}': record ${recordNo} has less fields than record 0!`);
         } else if (record.length > 1) {
           throw new TypeError(`Function '${stringFunctionName}': the last record ${recordNo} has less fields than record 0, but more than 1!`);
-        } else if (!withEmptyLine) {
-          throw new TypeError(`Function '${stringFunctionName}': the last record ${recordNo} has only one field, but 'withEmptyLine' is set to false!`);
+        } else if (!preserveEmptyLine) {
+          throw new TypeError(`Function '${stringFunctionName}': the last record ${recordNo} has only one field, but 'preserveEmptyLine' is set to false!`);
         }
       }
     }
@@ -178,8 +178,8 @@ function checkValues(recordSet, parameters = {}, functionName = '') {
   const stringFunctionName = functionName || 'checkValues';
   checkRecordSet(recordSet, stringFunctionName);
   checkParameters(parameters, stringFunctionName);
-  const withHeader = parameters.withHeader || false;
-  const withEmptyLine = parameters.withEmptyLine || false;
+  const hasHeader = parameters.hasHeader || false;
+  const preserveEmptyLine = parameters.preserveEmptyLine || false;
   recordSet.forEach((record, recordNo) => {
     record.forEach((field, fieldNo) => {
       if (field[3][0] !== '') {
@@ -192,7 +192,7 @@ function checkValues(recordSet, parameters = {}, functionName = '') {
     });
   });
 
-  if (withHeader) {
+  if (hasHeader) {
     recordSet[0].forEach((field, fieldNo) => {
       if (field[2][0] === '') {
         throw new TypeError(`Function '${stringFunctionName}': header of field ${fieldNo} is non-escaped empty string!`);
@@ -206,10 +206,10 @@ function checkValues(recordSet, parameters = {}, functionName = '') {
   if (recordSet.length > 1) {
     const firstRecord = recordSet[0];
     const lastRecord = recordSet[recordSet.length - 1];
-    if (firstRecord.length > 1 && lastRecord.length === 1 && withEmptyLine) {
+    if (firstRecord.length > 1 && lastRecord.length === 1 && preserveEmptyLine) {
       if (lastRecord[0][1][0] !== '\r\n' || lastRecord[0][2][0] !== '' || lastRecord[0][3][0] !== ''
           || lastRecord[0][1][1] !== 0 || lastRecord[0][2][1] !== 2 || lastRecord[0][3][1] !== 2) {
-        throw new TypeError(`Function '${stringFunctionName}': when 'withEmptyLine' is set to true, the only field of the last record ${recordSet.length - 1} is not empty!'`);
+        throw new TypeError(`Function '${stringFunctionName}': when 'preserveEmptyLine' is set to true, the only field of the last record ${recordSet.length - 1} is not empty!'`);
       }
     }
   }
@@ -218,15 +218,15 @@ function checkValues(recordSet, parameters = {}, functionName = '') {
 
 function convertValue(value, parameters) {
   checkParameters(parameters, 'convertValue');
-  const withNumbers = parameters.withNumbers || false;
-  const withNull = parameters.withNull || false;
-  if (withNumbers && !Number.isNaN(Number.parseFloat(value))) {
+  const convertToNumber = parameters.convertToNumber || false;
+  const convertToNull = parameters.convertToNull || false;
+  if (convertToNumber && !Number.isNaN(Number.parseFloat(value))) {
     if (value.indexOf('.') !== -1) {
       return Number.parseFloat(value);
     }
     return Number.parseInt(value, 10);
   }
-  if (!withNull) {
+  if (!convertToNull) {
     return value;
   }
   if (emptyValuePattern.test(value)) {
@@ -240,16 +240,16 @@ function recordsToDataTree(recordSet, parameters = {}) {
   checkRecordSet(recordSet, 'recordsToDataTree');
   checkParameters(parameters, 'recordsToDataTree');
   checkRecords(recordSet, parameters, 'recordsToDataTree');
-  const withHeader = parameters.withHeader || false;
-  const withEmptyLine = parameters.withEmptyLine || false;
-  const ignoreCorruptedData = parameters.ignoreCorruptedData || false;
+  const hasHeader = parameters.hasHeader || false;
+  const preserveEmptyLine = parameters.preserveEmptyLine || false;
+  const ignoreInvalidChars = parameters.ignoreInvalidChars || false;
 
-  if (!ignoreCorruptedData) {
+  if (!ignoreInvalidChars) {
     checkValues(recordSet, parameters, 'recordsToDataTree');
   }
 
   let filteredRecords = recordSet;
-  if (!withEmptyLine) {
+  if (!preserveEmptyLine) {
     filteredRecords = recordSet.filter(
       (record, recordNo) => (
         recordNo < recordSet.length - 1 || record.length > 1
@@ -263,7 +263,7 @@ function recordsToDataTree(recordSet, parameters = {}) {
     record => record.map(field => convertValue(field[2][0], parameters)),
   );
   const tree = {};
-  if (withHeader) {
+  if (hasHeader) {
     tree.header = dataRecords.shift();
   }
   if (dataRecords.length > 0) {

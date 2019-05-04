@@ -197,15 +197,15 @@ describe('checkRecords\n', () => {
           message: 'Function \'checkRecords\': the last record 1 has less fields than record 0, but more than 1!',
         },
         {
-          it: 'the last record has only one field, but parameter \'withEmptyLine\' is set to \'false\':\n',
+          it: 'the last record has only one field, but parameter \'preserveEmptyLine\' is set to \'false\':\n',
           csv: ',\r\n',
-          withEmptyLine: false,
-          message: 'Function \'checkRecords\': the last record 1 has only one field, but \'withEmptyLine\' is set to false!',
+          preserveEmptyLine: false,
+          message: 'Function \'checkRecords\': the last record 1 has only one field, but \'preserveEmptyLine\' is set to false!',
         },
       ];
       testDataList.forEach((testData) => {
         const records = makeRecords(testData.csv);
-        const parameters = { withEmptyLine: testData.withEmptyLine || false };
+        const parameters = { preserveEmptyLine: testData.preserveEmptyLine || false };
         it(testData.it, () => {
           expect(
             () => {
@@ -238,16 +238,16 @@ describe('checkValues\n', () => {
           message: 'Function \'checkValues\': record 0, field 0: \'"abc""\' has corrupted end \'"\' at position 5!',
         },
         {
-          it: 'parameter \'withEmptyLine\' is set to \'true\', but the only field of the last record 1 is not empty:',
+          it: 'parameter \'preserveEmptyLine\' is set to \'true\', but the only field of the last record 1 is not empty:',
           csv: ',\r\na',
-          withEmptyLine: true,
-          message: 'Function \'checkValues\': when \'withEmptyLine\' is set to true, the only field of the last record 1 is not empty!',
+          preserveEmptyLine: true,
+          message: 'Function \'checkValues\': when \'preserveEmptyLine\' is set to true, the only field of the last record 1 is not empty!',
         },
       ];
       testDataList.forEach((testData) => {
         const escCsv = escapeNl(testData.csv);
         const records = makeRecords(testData.csv);
-        const parameters = { withEmptyLine: testData.withEmptyLine || false };
+        const parameters = { preserveEmptyLine: testData.preserveEmptyLine || false };
         it(`${testData.it}\n${indentString(`csv == '${escCsv}' ->\nrecords ==`, 6)}\n${indentJson(records, 7)}\n`, () => {
           expect(() => {
             checkValues(records, parameters);
@@ -322,24 +322,24 @@ describe('makeDataTree\n', () => {
     );
     it(
       'when argument \'parameters\' has member with non-boolean value\n',
-      () => expect(() => makeDataTree('', { withHeader: 1 }))
+      () => expect(() => makeDataTree('', { hasHeader: 1 }))
         .to.throw(
           TypeError,
-          'Function \'makeDataTree\': value of parameter \'withHeader\' is not boolean!',
+          'Function \'makeDataTree\': value of parameter \'hasHeader\' is not boolean!',
         ),
     );
     it(
       'when csv string has corrupted records and fields\n',
       () => expect(() => makeDataTree('a"\n\r')).to.throw(TypeError, 'Function \'recordsToDataTree\': record 0, field 0: \'a"\\n\\r\' has corrupted end \'"\\n\\r\' at position 1!'),
     );
-    describe('parameter \'withHeader\' equals to true\n', () => {
+    describe('parameter \'hasHeader\' equals to true\n', () => {
       it(
         'and csv string has empty non-escaped fields in the first record\n',
-        () => expect(() => makeDataTree('a,,b', { withHeader: true })).to.throw(TypeError, 'Function \'recordsToDataTree\': header of field 1 is non-escaped empty string!'),
+        () => expect(() => makeDataTree('a,,b', { hasHeader: true })).to.throw(TypeError, 'Function \'recordsToDataTree\': header of field 1 is non-escaped empty string!'),
       );
       it(
         'and csv string has empty escaped fields in the first record\n',
-        () => expect(() => makeDataTree('a,"",b', { withHeader: true })).to.throw(TypeError, 'Function \'recordsToDataTree\': header of field 1 is escaped empty string!'),
+        () => expect(() => makeDataTree('a,"",b', { hasHeader: true })).to.throw(TypeError, 'Function \'recordsToDataTree\': header of field 1 is escaped empty string!'),
       );
     });
   });
@@ -388,38 +388,38 @@ describe('makeDataTree\n', () => {
         });
       });
     });
-    describe(`when parameter 'withHeader' equals to true\n${indent('  ', 4)}and csv string:\n`, () => {
+    describe(`when parameter 'hasHeader' equals to true\n${indent('  ', 4)}and csv string:\n`, () => {
       it('has first record with no empty fields\n', () => {
         const expected = { header: ['a', 'b', 'c'] };
-        expect(makeDataTree('a,b,c', { withHeader: true })).to.deep.equal(expected);
+        expect(makeDataTree('a,b,c', { hasHeader: true })).to.deep.equal(expected);
       });
     });
-    describe(`when parameter 'withNull' equals to true\n${indent('  ', 4)}and csv string:\n`, () => {
+    describe(`when parameter 'convertToNull' equals to true\n${indent('  ', 4)}and csv string:\n`, () => {
       it('has empty non-escaped field, escaped field and field with double comma inside\n', () => {
         const expected = { records: [[null, '', '"']] };
-        expect(makeDataTree(',"",""""', { withNull: true })).to.deep.equal(expected);
+        expect(makeDataTree(',"",""""', { convertToNull: true })).to.deep.equal(expected);
       });
     });
     describe(`when parameter 'withNumber' equals to true\n${indent('  ', 4)}and csv string:\n`, () => {
       it('has fields, consisting of digits and one point only\n', () => {
         const expected = { records: [[1, 1.1]] };
-        expect(makeDataTree('1,1.1', { withNumbers: true })).to.deep.equal(expected);
+        expect(makeDataTree('1,1.1', { convertToNumber: true })).to.deep.equal(expected);
       });
     });
-    describe(`when parameter 'withEmptyLine' equals to true\n${indent('  ', 4)}and csv string:\n`, () => {
+    describe(`when parameter 'preserveEmptyLine' equals to true\n${indent('  ', 4)}and csv string:\n`, () => {
       it('has first records with several fields and record separator at very end of string\n', () => {
         const expected = { records: [['a', 'b'], ['']] };
-        expect(makeDataTree('a,b\r\n', { withEmptyLine: true })).to.deep.equal(expected);
+        expect(makeDataTree('a,b\r\n', { preserveEmptyLine: true })).to.deep.equal(expected);
       });
     });
-    describe(`when parameter 'ignoreCorruptedData' equals to true\n${indent('  ', 4)}and csv string:\n`, () => {
+    describe(`when parameter 'ignoreInvalidChars' equals to true\n${indent('  ', 4)}and csv string:\n`, () => {
       it('has a non-escaped field corrupted at the end of it\n', () => {
         const expected = { records: [['a']] };
-        expect(makeDataTree('a"', { ignoreCorruptedData: true })).to.deep.equal(expected);
+        expect(makeDataTree('a"', { ignoreInvalidChars: true })).to.deep.equal(expected);
       });
       it('has a escaped field corrupted at the end of it\n', () => {
         const expected = { records: [['"a"']] };
-        expect(makeDataTree('"a"b', { ignoreCorruptedData: true })).to.deep.equal(expected);
+        expect(makeDataTree('"a"b', { ignoreInvalidChars: true })).to.deep.equal(expected);
       });
     });
   });

@@ -6,11 +6,11 @@ const {
 
 function CsvParser(_parameters = {}) {
   const privateParameters = Object.seal({
-    withHeader: false,
-    withNull: false,
-    withNumbers: false,
-    withEmptyLine: false,
-    ignoreCorruptedData: false,
+    hasHeader: false,
+    convertToNull: false,
+    convertToNumber: false,
+    preserveEmptyLine: false,
+    ignoreInvalidChars: false,
   });
 
   function setProperties(parameters) {

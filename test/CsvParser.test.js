@@ -9,31 +9,31 @@ describe('CsvParser\n', () => {
       expect(csvParser).to.be.an('object');
       expect(csvParser.constructor.name).to.equal('CsvParser');
       expect(csvParser.parameters).to.deep.equal(Object.seal({
-        withHeader: false,
-        withNull: false,
-        withNumbers: false,
-        withEmptyLine: false,
-        ignoreCorruptedData: false,
+        hasHeader: false,
+        convertToNull: false,
+        convertToNumber: false,
+        preserveEmptyLine: false,
+        ignoreInvalidChars: false,
       }));
     });
   });
   describe('calling with argument \'parameters\'\n', () => {
     it(' creates object with parameters different from default value\n', () => {
       const csvParser = CsvParser({
-        withHeader: true,
-        withNull: true,
-        withNumbers: true,
-        withEmptyLine: true,
-        ignoreCorruptedData: true,
+        hasHeader: true,
+        convertToNull: true,
+        convertToNumber: true,
+        preserveEmptyLine: true,
+        ignoreInvalidChars: true,
       });
       expect(csvParser).to.be.an('object');
       expect(csvParser.constructor.name).to.equal('CsvParser');
       expect(csvParser.parameters).to.deep.equal(Object.seal({
-        withHeader: true,
-        withNull: true,
-        withNumbers: true,
-        withEmptyLine: true,
-        ignoreCorruptedData: true,
+        hasHeader: true,
+        convertToNull: true,
+        convertToNumber: true,
+        preserveEmptyLine: true,
+        ignoreInvalidChars: true,
       }));
     });
   });
@@ -41,18 +41,18 @@ describe('CsvParser\n', () => {
     it('set parameters of object to new values\n', () => {
       const csvParser = CsvParser();
       csvParser.parameters = {
-        withHeader: true,
-        withNull: true,
-        withNumbers: true,
-        withEmptyLine: true,
-        ignoreCorruptedData: true,
+        hasHeader: true,
+        convertToNull: true,
+        convertToNumber: true,
+        preserveEmptyLine: true,
+        ignoreInvalidChars: true,
       };
       expect(csvParser.parameters).to.deep.equal({
-        withHeader: true,
-        withNull: true,
-        withNumbers: true,
-        withEmptyLine: true,
-        ignoreCorruptedData: true,
+        hasHeader: true,
+        convertToNull: true,
+        convertToNumber: true,
+        preserveEmptyLine: true,
+        ignoreInvalidChars: true,
       });
     });
   });
