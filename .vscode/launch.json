@@ -11,6 +11,10 @@
             "program": "${workspaceFolder}/index.js",
             "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/babel-node",
             "cwd": "${workspaceFolder}",
+            "skipFiles": [
+                "${workspaceFolder}/node_modules/**/*.js",
+                "<node_internals>/**/*.js"
+            ],
             "runtimeArgs": ["--nolazy"],
             "env": {
               "BABEL_ENV": "debug"
@@ -22,6 +26,10 @@
             "request": "launch",
             "cwd": "${workspaceRoot}",
             "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+            "skipFiles": [
+                "${workspaceFolder}/node_modules/**/*.js",
+                "<node_internals>/**/*.js"
+            ],
             "args": [
              "./{,!(node_modules)/**/}*.test.js",
                 "--require", "@babel/register",
