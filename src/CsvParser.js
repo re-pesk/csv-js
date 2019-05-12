@@ -52,19 +52,27 @@ function checkRecordSet(recordSet, stringFunctionName) {
   }
 }
 
-const allowedParameterList = ['hasHeader', 'convertToNull', 'convertToNumber', 'preserveEmptyLine', 'ignoreInvalidChars'];
+const defaultParameters = {
+  hasHeader: false,
+  convertToNull: false,
+  convertToNumber: false,
+  preserveEmptyLine: false,
+  ignoreInvalidChars: false,
+};
 
-function checkParameters(parameters, stringFunctionName) {
+const parameterNames = Object.getOwnPropertyNames(defaultParameters);
+
+function checkParameters(parameters, functionName) {
   if (typeof parameters !== 'object'
       || parameters.constructor.name !== 'Object') {
-    throw new TypeError(`Function '${stringFunctionName}': value of 'parameters' must be an Object!`);
+    throw new TypeError(`Function '${functionName}': value of 'parameters' must be an Object!`);
   }
   Object.getOwnPropertyNames(parameters).forEach((name) => {
-    if (!allowedParameterList.includes(name)) {
-      throw new TypeError(`Function '${stringFunctionName}': the object int the 'parameters' argument has a member '${name}' which is not included in the list of allowed parameters!`);
+    if (!parameterNames.includes(name)) {
+      throw new TypeError(`Function '${functionName}': the object in the 'parameters' argument has a member '${name}' which is not allowed parameter!`);
     }
     if (typeof parameters[name] !== 'boolean') {
-      throw new TypeError(`Function '${stringFunctionName}': value of parameter '${name}' is not boolean!`);
+      throw new TypeError(`Function '${functionName}': value of parameter '${name}' is not boolean!`);
     }
   });
 }
@@ -130,7 +138,7 @@ function makeRecords(csvString) {
   return recordSet;
 }
 
-function checkRecords(recordSet, parameters = {}, functionName = '') {
+function checkRecords(recordSet, parameters, functionName = '') {
   const stringFunctionName = functionName || 'checkRecords';
   checkRecordSet(recordSet, stringFunctionName);
   checkParameters(parameters, stringFunctionName);
@@ -174,7 +182,7 @@ function replacer(match) {
   return '\\n';
 }
 
-function checkValues(recordSet, parameters = {}, functionName = '') {
+function checkValues(recordSet, parameters, functionName) {
   const stringFunctionName = functionName || 'checkValues';
   checkRecordSet(recordSet, stringFunctionName);
   checkParameters(parameters, stringFunctionName);
@@ -236,7 +244,7 @@ function convertValue(value, parameters) {
   return newValue.replace(innerQuotesPattern, '"');
 }
 
-function recordsToDataTree(recordSet, parameters = {}) {
+function recordsToDataTree(recordSet, parameters) {
   checkRecordSet(recordSet, 'recordsToDataTree');
   checkParameters(parameters, 'recordsToDataTree');
   checkRecords(recordSet, parameters, 'recordsToDataTree');
@@ -272,7 +280,7 @@ function recordsToDataTree(recordSet, parameters = {}) {
   return tree;
 }
 
-function makeDataTree(csvString, parameters = {}) {
+function makeDataTree(csvString, parameters) {
   checkCsvString(csvString, 'makeDataTree');
   checkParameters(parameters, 'makeDataTree');
   const recordSet = makeRecords(csvString);
@@ -280,16 +288,8 @@ function makeDataTree(csvString, parameters = {}) {
   return dataTree;
 }
 
-// Constructor
-
 function CsvParser(_parameters = {}) {
-  const privateParameters = Object.seal({
-    hasHeader: false,
-    convertToNull: false,
-    convertToNumber: false,
-    preserveEmptyLine: false,
-    ignoreInvalidChars: false,
-  });
+  const privateParameters = Object.seal(Object.assign({}, defaultParameters));
 
   function setProperties(parameters) {
     checkParameters(parameters, 'CsvParser');
@@ -313,13 +313,4 @@ function CsvParser(_parameters = {}) {
   });
 }
 
-// eslint-disable-next-line import/prefer-default-export
-module.exports = {
-  CsvParser,
-  makeRecords,
-  checkParameters,
-  checkRecords,
-  checkValues,
-  recordsToDataTree,
-  makeDataTree,
-};
+module.exports = { CsvParser };
