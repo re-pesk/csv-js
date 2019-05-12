@@ -46,23 +46,23 @@ describe('CsvParser\n', () => {
     describe('throws error\n', () => {
       const csvParser = CsvParser();
       it(
-        'when argument \'parameters\' is not object\n',
+        'when argument \'parameters\' is not an object\n',
         () => expect(() => {
           csvParser.parameters = [];
-        }).to.throw(TypeError, 'Function \'CsvParser\': value of \'parameters\' must be an Object!'),
+        }).to.throw(TypeError, 'CsvParser::parameters::set: value of argument \'parameters\' must be an Object!'),
       );
       it(
-        'when argument \'parameters\' has member with name that is not in allowed parameter!\n',
+        'when argument \'parameters\' has a member that is not an allowed parameter!\n',
         () => expect(() => { csvParser.parameters = { notAllowedName: true }; }).to.throw(
           TypeError,
-          'Function \'CsvParser\': the object in the \'parameters\' argument has a member \'notAllowedName\' which is not allowed parameter!',
+          'CsvParser::parameters::set: the object in the \'parameters\' argument has a member \'notAllowedName\' that is not allowed parameter!',
         ),
       );
       it(
         'when argument \'parameters\' has member with non-boolean value\n',
         () => expect(() => { csvParser.parameters = { hasHeader: 1 }; }).to.throw(
           TypeError,
-          'Function \'CsvParser\': value of parameter \'hasHeader\' is not boolean!',
+          'CsvParser::parameters::set: value of parameter \'hasHeader\' is not boolean!',
         ),
       );
     });
@@ -91,7 +91,7 @@ describe('CsvParser\n', () => {
       const csvParser = CsvParser();
       it(
         'when called without argument\n',
-        () => expect(() => csvParser.makeRecords()).to.throw(TypeError, 'Function \'makeRecords\': value of \'csvString\' must be a string!'),
+        () => expect(() => csvParser.makeRecords()).to.throw(TypeError, 'CsvParser::makeRecords: value of \'csvString\' must be a string!'),
       );
     });
     describe('returns set of records that contains:\n', () => {
@@ -203,11 +203,12 @@ describe('CsvParser\n', () => {
   });
   describe('.checkRecords()\n', () => {
     const csvParser = CsvParser();
+    const functionName = 'CsvParser::checkRecords';
     describe('throws error\n', () => {
       describe('when it is called without arguments\n', () => {
         it(
           'value of \'recordSet\' is undefined\n',
-          () => expect(() => csvParser.checkRecords()).to.throw(TypeError, 'Function \'checkRecords\': value of \'recordSet\' must be an array!'),
+          () => expect(() => csvParser.checkRecords()).to.throw(TypeError, `${functionName}: value of 'recordSet' must be an array!`),
         );
       });
       describe('when argument \'recordSet\' gets value of a wrong type:\n', () => {
@@ -215,12 +216,12 @@ describe('CsvParser\n', () => {
           {
             it: 'value is undefined\n',
             records: undefined,
-            message: 'Function \'checkRecords\': value of \'recordSet\' must be an array!',
+            message: `${functionName}: value of 'recordSet' must be an array!`,
           },
           {
             it: 'value is not an array\n',
             records: {},
-            message: 'Function \'checkRecords\': value of \'recordSet\' must be an array!',
+            message: `${functionName}: value of 'recordSet' must be an array!`,
           },
         ];
         testDataList.forEach((testData) => {
@@ -237,17 +238,17 @@ describe('CsvParser\n', () => {
           {
             it: 'value is empty array\n',
             records: [],
-            message: 'Function \'checkRecords\': value of \'recordSet\' cannot be empty array!',
+            message: `${functionName}: value of 'recordSet' cannot be empty array!`,
           },
           {
             it: 'array contains record without fields\n',
             records: [[]],
-            message: 'Function \'checkRecords\': record 0 have no fields!',
+            message: `${functionName}: record 0 have no fields!`,
           },
           {
             it: 'array contains record that have an empty element\n',
             records: [[[]]],
-            message: 'Function \'checkRecords\': item 0 of record 0 is not an field!',
+            message: `${functionName}: item 0 of record 0 is not an field!`,
           },
         ];
         testDataList.forEach((testData) => {
@@ -264,23 +265,23 @@ describe('CsvParser\n', () => {
           {
             it: 'record has more fields than first record\n',
             csv: '\r\n,',
-            message: 'Function \'checkRecords\': record 1 has more fields than record 0!',
+            message: `${functionName}: record 1 has more fields than record 0!`,
           },
           {
             it: 'record has less fields than first record\n',
             csv: ',\r\n\r\n',
-            message: 'Function \'checkRecords\': record 1 has less fields than record 0!',
+            message: `${functionName}: record 1 has less fields than record 0!`,
           },
           {
             it: 'the last record has has less fields than first record, but more than one\n',
             csv: ',,\r\n,',
-            message: 'Function \'checkRecords\': the last record 1 has less fields than record 0, but more than 1!',
+            message: `${functionName}: the last record 1 has less fields than record 0, but more than 1!`,
           },
           {
             it: 'the last record has only one field, but parameter \'preserveEmptyLine\' is set to \'false\':\n',
             csv: ',\r\n',
             preserveEmptyLine: false,
-            message: 'Function \'checkRecords\': the last record 1 has only one field, but \'preserveEmptyLine\' is set to false!',
+            message: `${functionName}: the last record 1 has only one field, but 'preserveEmptyLine' is set to false!`,
           },
         ];
         testDataList.forEach((testData) => {
@@ -299,29 +300,30 @@ describe('CsvParser\n', () => {
   });
   describe('.checkValues()\n', () => {
     const csvParser = CsvParser();
+    const functionName = 'CsvParser::checkValues';
     describe('throws error\n', () => {
       describe('when function is called without arguments\n', () => {
         it('value of \'recordSet\' is undefined\n', () => {
-          expect(() => csvParser.checkValues()).to.throw(TypeError, 'Function \'checkValues\': value of \'recordSet\' must be an array!');
+          expect(() => csvParser.checkValues()).to.throw(TypeError, `${functionName}: value of 'recordSet' must be an array!`);
         });
       });
       describe('when records contains wrong data:\n', () => {
         const testDataList = [
           {
-            it: '\'abc"\' has corrupted end \'"\' at position 3!',
+            it: '\'abc"\' has invalid end \'"\' at position 3!',
             csv: 'abc"',
-            message: 'Function \'checkValues\': record 0, field 0: \'abc"\' has corrupted end \'"\' at position 3!',
+            message: `${functionName}: record 0, field 0: 'abc"' has invalid end '"' at position 3!`,
           },
           {
-            it: '\'"abc""\' has corrupted end \'"\' at position 5!',
+            it: '\'"abc""\' has invalid end \'"\' at position 5!',
             csv: '"abc""',
-            message: 'Function \'checkValues\': record 0, field 0: \'"abc""\' has corrupted end \'"\' at position 5!',
+            message: `${functionName}: record 0, field 0: '"abc""' has invalid end '"' at position 5!`,
           },
           {
             it: 'parameter \'preserveEmptyLine\' is set to \'true\', but the only field of the last record 1 is not empty:',
             csv: ',\r\na',
             preserveEmptyLine: true,
-            message: 'Function \'checkValues\': when \'preserveEmptyLine\' is set to true, the only field of the last record 1 is not empty!',
+            message: `${functionName}: when 'preserveEmptyLine' is set to true, the only field of the last record 1 is not empty!`,
           },
         ];
         testDataList.forEach((testData) => {
@@ -339,22 +341,23 @@ describe('CsvParser\n', () => {
   });
   describe('.recordsToDataTree()\n', () => {
     const csvParser = CsvParser();
+    const functionName = 'CsvParser::recordsToDataTree';
     describe('throws error\n', () => {
       const testDataList = [
         {
           it: 'when called without argument',
           recordSet: undefined,
-          message: 'Function \'recordsToDataTree\': value of \'recordSet\' must be an array!',
+          message: `${functionName}: value of 'recordSet' must be an array!`,
         },
         {
           it: 'when argument \'recordSet\' has not valid structure',
           recordSet: [[[['', 0], ['', 0], ['', 0], ['']]]],
-          message: 'Function \'recordsToDataTree\': item 3 of field 0 of record 0 is not a part of field!',
+          message: `${functionName}: item 3 of field 0 of record 0 is not a part of field!`,
         },
         {
           it: 'when the argument \'recordSet\' has non-allowed data',
           recordSet: [[[['a"', 0], ['', 0], ['a', 0], ['"', 1]]]],
-          message: 'Function \'recordsToDataTree\': record 0, field 0: \'a"\' has corrupted end \'"\' at position 1!',
+          message: `${functionName}: record 0, field 0: 'a"' has invalid end '"' at position 1!`,
         },
       ];
       testDataList.forEach((testData) => {
@@ -370,25 +373,26 @@ describe('CsvParser\n', () => {
     });
   });
   describe('.makeDataTree()\n', () => {
+    const functionName = 'CsvParser::makeDataTree';
     describe('throws error\n', () => {
       const csvParser = CsvParser();
       it(
         'when called without argument\n',
-        () => expect(() => csvParser.makeDataTree()).to.throw(TypeError, 'Function \'makeDataTree\': value of \'csvString\' must be a string!'),
+        () => expect(() => csvParser.makeDataTree()).to.throw(TypeError, `${functionName}: value of 'csvString' must be a string!`),
       );
       it(
-        'when csv string has corrupted records and fields\n',
-        () => expect(() => csvParser.makeDataTree('a"\n\r')).to.throw(TypeError, 'Function \'recordsToDataTree\': record 0, field 0: \'a"\\n\\r\' has corrupted end \'"\\n\\r\' at position 1!'),
+        'when csv string has invalid records and fields\n',
+        () => expect(() => csvParser.makeDataTree('a"\n\r')).to.throw(TypeError, `${functionName}: record 0, field 0: 'a"\\n\\r' has invalid end '"\\n\\r' at position 1!`),
       );
       describe('parameter \'hasHeader\' equals to true\n', () => {
         csvParser.parameters = { hasHeader: true };
         it(
           'and csv string has empty non-escaped fields in the first record\n',
-          () => expect(() => csvParser.makeDataTree('a,,b')).to.throw(TypeError, 'Function \'recordsToDataTree\': header of field 1 is non-escaped empty string!'),
+          () => expect(() => csvParser.makeDataTree('a,,b')).to.throw(TypeError, `${functionName}: header of field 1 is non-escaped empty string!`),
         );
         it(
           'and csv string has empty escaped fields in the first record\n',
-          () => expect(() => csvParser.makeDataTree('a,"",b')).to.throw(TypeError, 'Function \'recordsToDataTree\': header of field 1 is escaped empty string!'),
+          () => expect(() => csvParser.makeDataTree('a,"",b')).to.throw(TypeError, `${functionName}: header of field 1 is escaped empty string!`),
         );
       });
     });
