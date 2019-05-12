@@ -315,5 +315,11 @@ function CsvParser(_parameters = {}) {
 
 // eslint-disable-next-line import/prefer-default-export
 module.exports = {
-  CsvParser, makeRecords, checkParameters, checkRecords, checkValues, recordsToDataTree, makeDataTree,
+  CsvParser,
+  makeRecords,
+  checkParameters,
+  checkRecords,
+  checkValues,
+  recordsToDataTree,
+  makeDataTree,
 };

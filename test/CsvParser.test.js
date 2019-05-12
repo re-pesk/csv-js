@@ -3,7 +3,7 @@ const { describe, it } = require('mocha');
 const { expect } = require('chai');
 const {
   CsvParser, makeRecords, checkRecords, checkValues, recordsToDataTree, makeDataTree,
-} = require('../src/CsvParsing');
+} = require('../src/CsvParser');
 const {
   escapeNl, indent, indentString, indentJson,
 } = require('../src/helpers');

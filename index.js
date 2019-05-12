@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 console.clear();
-const { CsvParser } = require('./src/CsvParsing');
+const { CsvParser } = require('./src/CsvParser');
 
 
 const csv = `field_name_1,"Field\r
