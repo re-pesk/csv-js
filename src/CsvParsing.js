@@ -280,7 +280,40 @@ function makeDataTree(csvString, parameters = {}) {
   return dataTree;
 }
 
+// Constructor
+
+function CsvParser(_parameters = {}) {
+  const privateParameters = Object.seal({
+    hasHeader: false,
+    convertToNull: false,
+    convertToNumber: false,
+    preserveEmptyLine: false,
+    ignoreInvalidChars: false,
+  });
+
+  function setProperties(parameters) {
+    checkParameters(parameters, 'CsvParser');
+    const names = Object.getOwnPropertyNames(parameters);
+    names.forEach((name) => {
+      privateParameters[name] = parameters[name];
+    });
+  }
+
+  setProperties(_parameters);
+
+  return Object.seal({
+    constructor: CsvParser,
+    get parameters() { return privateParameters; },
+    set parameters(properties) { setProperties(properties); },
+    makeRecords(csv) { return makeRecords(csv); },
+    checkRecords(recordSet) { return checkRecords(recordSet, privateParameters); },
+    checkValues(recordSet) { return checkValues(recordSet, privateParameters); },
+    recordsToDataTree(recordSet) { return recordsToDataTree(recordSet, privateParameters); },
+    makeDataTree(csvString) { return makeDataTree(csvString, privateParameters); },
+  });
+}
+
 // eslint-disable-next-line import/prefer-default-export
-export {
-  makeRecords, checkParameters, checkRecords, checkValues, recordsToDataTree, makeDataTree,
+module.exports = {
+  CsvParser, makeRecords, checkParameters, checkRecords, checkValues, recordsToDataTree, makeDataTree,
 };
