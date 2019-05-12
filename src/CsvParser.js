@@ -240,7 +240,6 @@ function convertValue(value, parameters) {
 }
 
 function recordsToDataTree(recordSet, parameters, functionName) {
-  checkRecordSet(recordSet, functionName);
   checkRecords(recordSet, parameters, functionName);
   const hasHeader = parameters.hasHeader || false;
   const preserveEmptyLine = parameters.preserveEmptyLine || false;
