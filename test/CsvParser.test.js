@@ -5,10 +5,10 @@ const {
   escapeNl, indent, indentString, indentJson,
 } = require('../src/helpers');
 
-describe('CsvParser\n', () => {
-  describe('::()\n', () => {
-    describe('calling without arguments\n', () => {
-      it('creates object with all parameters equal to default value (false)\n', () => {
+describe('CsvParser', () => {
+  describe('::()', () => {
+    describe('calling without arguments', () => {
+      it('creates object with all parameters equal to default value (false)', () => {
         const csvParser = CsvParser();
         expect(csvParser).to.be.an('object');
         expect(csvParser.constructor.name).to.equal('CsvParser');
@@ -21,8 +21,8 @@ describe('CsvParser\n', () => {
         }));
       });
     });
-    describe('calling with argument \'parameters\'\n', () => {
-      it(' creates object with parameters different from default value\n', () => {
+    describe('calling with argument \'parameters\'', () => {
+      it(' creates object with parameters different from default value', () => {
         const csvParser = CsvParser({
           hasHeader: true,
           convertToNull: true,
@@ -42,32 +42,32 @@ describe('CsvParser\n', () => {
       });
     });
   });
-  describe('assigning value to property \'.parameters\'\n', () => {
-    describe('throws error\n', () => {
+  describe('assigning value to property \'.parameters\'', () => {
+    describe('throws error', () => {
       const csvParser = CsvParser();
       it(
-        'when argument \'parameters\' is not an object\n',
+        'when argument \'parameters\' is not an object',
         () => expect(() => {
           csvParser.parameters = [];
         }).to.throw(TypeError, 'Argument \'parameters\' must be an Object!'),
       );
       it(
-        'when argument \'parameters\' has a member that is not an allowed parameter!\n',
+        'when argument \'parameters\' has a member that is not an allowed parameter!',
         () => expect(() => { csvParser.parameters = { notAllowedName: true }; }).to.throw(
           TypeError,
           'The parser cannot have parameter with name \'notAllowedName\'!',
         ),
       );
       it(
-        'when argument \'parameters\' has member with non-boolean value\n',
+        'when argument \'parameters\' has member with non-boolean value',
         () => expect(() => { csvParser.parameters = { hasHeader: 1 }; }).to.throw(
           TypeError,
           'The value of parameter \'hasHeader\' is not a boolean!',
         ),
       );
     });
-    describe('sets parameters of object to new values\n', () => {
-      it('when parameters object was valid\n', () => {
+    describe('sets parameters of object to new values', () => {
+      it('when parameters object was valid', () => {
         const csvParser = CsvParser();
         csvParser.parameters = {
           hasHeader: true,
@@ -86,15 +86,15 @@ describe('CsvParser\n', () => {
       });
     });
   });
-  describe('.makeRecords()\n', () => {
-    describe('throws error\n', () => {
+  describe('.makeRecords()', () => {
+    describe('throws error', () => {
       const csvParser = CsvParser();
       it(
-        'when called without argument\n',
+        'when called without argument',
         () => expect(() => csvParser.makeRecords()).to.throw(TypeError, 'Argument \'csvString\' must be a string!'),
       );
     });
-    describe('returns set of records that contains:\n', () => {
+    describe('returns set of records that contains:', () => {
       const csvParser = CsvParser();
       const testDataList = {
         makeRecords: [
@@ -193,7 +193,7 @@ describe('CsvParser\n', () => {
       };
       testDataList.makeRecords.forEach((testData) => {
         it(
-          `${testData.it}\n${indent('  ', 5)}when argument 'csv' is '${escapeNl(testData.csv)}'\n`,
+          `${testData.it}\n${indent('  ', 5)}when argument 'csv' is '${escapeNl(testData.csv)}'`,
           () => {
             expect(csvParser.makeRecords(testData.csv)).to.deep.equal(testData.expected);
           },
@@ -201,24 +201,24 @@ describe('CsvParser\n', () => {
       });
     });
   });
-  describe('.checkRecords()\n', () => {
+  describe('.checkRecords()', () => {
     const csvParser = CsvParser();
-    describe('throws error\n', () => {
-      describe('when it is called without arguments\n', () => {
+    describe('throws error', () => {
+      describe('when it is called without arguments', () => {
         it(
-          'value of \'recordSet\' is undefined\n',
+          'value of \'recordSet\' is undefined',
           () => expect(() => csvParser.checkRecords()).to.throw(TypeError, 'Argument \'recordSet\' must be an array!'),
         );
       });
-      describe('when argument \'recordSet\' gets value of a wrong type:\n', () => {
+      describe('when argument \'recordSet\' gets value of a wrong type:', () => {
         const testDataList = [
           {
-            it: 'value is undefined\n',
+            it: 'value is undefined',
             records: undefined,
             message: 'Argument \'recordSet\' must be an array!',
           },
           {
-            it: 'value is not an array\n',
+            it: 'value is not an array',
             records: {},
             message: 'Argument \'recordSet\' must be an array!',
           },
@@ -232,20 +232,20 @@ describe('CsvParser\n', () => {
           );
         });
       });
-      describe('when value of \'recordSet\' has a wrong structure:\n', () => {
+      describe('when value of \'recordSet\' has a wrong structure:', () => {
         const testDataList = [
           {
-            it: 'value is empty array\n',
+            it: 'value is empty array',
             records: [],
             message: 'Argument \'recordSet\' cannot be empty array!',
           },
           {
-            it: 'array contains record without fields\n',
+            it: 'array contains record without fields',
             records: [[]],
             message: 'Record #0 have no fields!',
           },
           {
-            it: 'array contains record that have an empty element\n',
+            it: 'array contains record that have an empty element',
             records: [[[]]],
             message: 'Item #0 of record #0 is not a field!',
           },
@@ -259,25 +259,25 @@ describe('CsvParser\n', () => {
           );
         });
       });
-      describe('when not all records in \'recordSet\' has the same length:\n', () => {
+      describe('when not all records in \'recordSet\' has the same length:', () => {
         const testDataList = [
           {
-            it: 'record has more fields than first record\n',
+            it: 'record has more fields than first record',
             csv: '\r\n,',
             message: 'Record #1 has more fields than record #0!',
           },
           {
-            it: 'record has less fields than first record\n',
+            it: 'record has less fields than first record',
             csv: ',\r\n\r\n',
             message: 'Record #1 has less fields than record #0!',
           },
           {
-            it: 'the last record has has less fields than first record, but more than one\n',
+            it: 'the last record has has less fields than first record, but more than one',
             csv: ',,\r\n,',
             message: 'The last record #1 has less fields than record #0, but more than 1!',
           },
           {
-            it: 'the first record has several fields, but the only field of the last record is not empty\n',
+            it: 'the first record has several fields, but the only field of the last record is not empty',
             csv: ',\r\na',
             message: 'The only field of the last record #1 is not empty, when the first record has several fields!',
           },
@@ -295,15 +295,15 @@ describe('CsvParser\n', () => {
       });
     });
   });
-  describe('.checkValues()\n', () => {
+  describe('.checkValues()', () => {
     const csvParser = CsvParser();
-    describe('throws error\n', () => {
-      describe('when function is called without arguments\n', () => {
-        it('value of \'recordSet\' is undefined\n', () => {
+    describe('throws error', () => {
+      describe('when function is called without arguments', () => {
+        it('value of \'recordSet\' is undefined', () => {
           expect(() => csvParser.checkValues()).to.throw(TypeError, 'Argument \'recordSet\' must be an array!');
         });
       });
-      describe('when records contains wrong data:\n', () => {
+      describe('when records contains wrong data:', () => {
         const testDataList = [
           {
             it: '\'abc"\' has invalid end \'"\' at position 3!',
@@ -324,7 +324,7 @@ describe('CsvParser\n', () => {
         testDataList.forEach((testData) => {
           const escCsv = escapeNl(testData.csv);
           const records = csvParser.makeRecords(testData.csv);
-          it(`${testData.it}\n${indentString(`csv == '${escCsv}' ->\nrecords ==`, 6)}\n${indentJson(records, 7)}\n`, () => {
+          it(`${testData.it}\n${indentString(`csv == '${escCsv}' -> records ==`, 7)}\n${indentJson(records, 8)}`, () => {
             expect(() => {
               csvParser.checkValues(records);
             }).to.throw(TypeError, testData.message);
@@ -333,9 +333,9 @@ describe('CsvParser\n', () => {
       });
     });
   });
-  describe('.recordsToDataTree()\n', () => {
+  describe('.recordsToDataTree()', () => {
     const csvParser = CsvParser();
-    describe('throws error\n', () => {
+    describe('throws error', () => {
       const testDataList = [
         {
           it: 'when called without argument',
@@ -354,7 +354,7 @@ describe('CsvParser\n', () => {
         },
       ];
       testDataList.forEach((testData) => {
-        it(`${testData.it}\n`, () => {
+        it(`${testData.it}`, () => {
           if (!testData.recordSet) {
             expect(() => csvParser.recordsToDataTree()).to.throw(TypeError, testData.message);
           } else {
@@ -365,31 +365,31 @@ describe('CsvParser\n', () => {
       });
     });
   });
-  describe('.makeDataTree()\n', () => {
-    describe('throws error\n', () => {
+  describe('.makeDataTree()', () => {
+    describe('throws error', () => {
       const csvParser = CsvParser();
       it(
-        'when called without argument\n',
+        'when called without argument',
         () => expect(() => csvParser.makeDataTree()).to.throw(TypeError, 'Argument \'csvString\' must be a string!'),
       );
       it(
-        'when csv string has invalid records and fields\n',
+        'when csv string has invalid records and fields',
         () => expect(() => csvParser.makeDataTree('a"\n\r')).to.throw(TypeError, 'Record #0, field #0: \'a"\\n\\r\' has invalid end \'"\\n\\r\' at position 1!'),
       );
-      describe('parameter \'hasHeader\' equals to true\n', () => {
+      describe('parameter \'hasHeader\' equals to true', () => {
         csvParser.parameters = { hasHeader: true };
         it(
-          'and csv string has empty non-escaped fields in the first record\n',
+          'and csv string has empty non-escaped fields in the first record',
           () => expect(() => csvParser.makeDataTree('a,,b')).to.throw(TypeError, 'Value of header field #1 is non-escaped empty string!'),
         );
         it(
-          'and csv string has empty escaped fields in the first record\n',
+          'and csv string has empty escaped fields in the first record',
           () => expect(() => csvParser.makeDataTree('a,"",b')).to.throw(TypeError, 'Value of header field #1 is escaped empty string!'),
         );
       });
     });
-    describe('parses csv string and creates appropriate data tree\n', () => {
-      describe(`when all parameters are equal to false\n${indent('  ', 5)}and csv string:\n`, () => {
+    describe('parses csv string and creates appropriate data tree', () => {
+      describe(`when all parameters are equal to false\n${indent('  ', 5)}and csv string:`, () => {
         const csvParser = CsvParser();
         const testDataList = [
           {
@@ -434,46 +434,46 @@ describe('CsvParser\n', () => {
           },
         ];
         testDataList.forEach((testData) => {
-          it(`${testData.it} '${escapeNl(testData.csv)}'\n'`, () => {
+          it(`${testData.it} '${escapeNl(testData.csv)}''`, () => {
             expect(csvParser.makeDataTree(testData.csv)).to.deep.equal(testData.expected);
           });
         });
       });
-      describe(`when parameter 'hasHeader' equals to true\n${indent('  ', 5)}and csv string:\n`, () => {
+      describe(`when parameter 'hasHeader' equals to true\n${indent('  ', 5)}and csv string:`, () => {
         const csvParser = CsvParser({ hasHeader: true });
-        it('has first record with no empty fields\n', () => {
+        it('has first record with no empty fields', () => {
           const expected = { header: ['a', 'b', 'c'] };
           expect(csvParser.makeDataTree('a,b,c')).to.deep.equal(expected);
         });
       });
-      describe(`when parameter 'convertToNull' equals to true\n${indent('  ', 5)}and csv string:\n`, () => {
+      describe(`when parameter 'convertToNull' equals to true\n${indent('  ', 5)}and csv string:`, () => {
         const csvParser = CsvParser({ convertToNull: true });
-        it('has empty non-escaped field, escaped field and field with double comma inside\n', () => {
+        it('has empty non-escaped field, escaped field and field with double comma inside', () => {
           const expected = { records: [[null, '', '"']] };
           expect(csvParser.makeDataTree(',"",""""')).to.deep.equal(expected);
         });
       });
-      describe(`when parameter 'convertToNumber' equals to true\n${indent('  ', 5)}and csv string:\n`, () => {
+      describe(`when parameter 'convertToNumber' equals to true\n${indent('  ', 5)}and csv string:`, () => {
         const csvParser = CsvParser({ convertToNumber: true });
-        it('has fields, consisting of digits and one point only\n', () => {
+        it('has fields, consisting of digits and one point only', () => {
           const expected = { records: [[1, 1.1]] };
           expect(csvParser.makeDataTree('1,1.1')).to.deep.equal(expected);
         });
       });
-      describe(`when parameter 'preserveEmptyLine' equals to true\n${indent('  ', 5)}and csv string:\n`, () => {
+      describe(`when parameter 'preserveEmptyLine' equals to true\n${indent('  ', 5)}and csv string:`, () => {
         const csvParser = CsvParser({ preserveEmptyLine: true });
-        it('has first records with several fields and record separator at very end of string\n', () => {
+        it('has first records with several fields and record separator at very end of string', () => {
           const expected = { records: [['a', 'b'], ['']] };
           expect(csvParser.makeDataTree('a,b\r\n', { preserveEmptyLine: true })).to.deep.equal(expected);
         });
       });
-      describe(`when parameter 'ignoreInvalidChars' equals to true\n${indent('  ', 5)}and csv string:\n`, () => {
+      describe(`when parameter 'ignoreInvalidChars' equals to true\n${indent('  ', 5)}and csv string:`, () => {
         const csvParser = CsvParser({ ignoreInvalidChars: true });
-        it('has a non-escaped field corrupted at the end of it\n', () => {
+        it('has a non-escaped field corrupted at the end of it', () => {
           const expected = { records: [['a']] };
           expect(csvParser.makeDataTree('a"')).to.deep.equal(expected);
         });
-        it('has a escaped field corrupted at the end of it\n', () => {
+        it('has a escaped field corrupted at the end of it', () => {
           const expected = { records: [['"a"']] };
           expect(csvParser.makeDataTree('"a"b')).to.deep.equal(expected);
         });
