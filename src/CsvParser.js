@@ -138,6 +138,15 @@ function makeRecords(csvString, functionName) {
   return recordSet;
 }
 
+function emptyField(field) {
+  return field[1][0] === '\r\n'
+    && field[2][0] === ''
+    && field[3][0] === ''
+    && field[1][1] === 0
+    && field[2][1] === 2
+    && field[3][1] === 2;
+}
+
 function checkRecords(recordSet, parameters, functionName) {
   checkRecordSet(recordSet, functionName);
   const preserveEmptyLine = parameters.preserveEmptyLine || false;
@@ -164,7 +173,7 @@ function checkRecords(recordSet, parameters, functionName) {
           throw new TypeError(`${functionName}: record ${recordNo} has less fields than record 0!`);
         } else if (record.length > 1) {
           throw new TypeError(`${functionName}: the last record ${recordNo} has less fields than record 0, but more than 1!`);
-        } else if (!preserveEmptyLine) {
+        } else if (!emptyField(record[0])) {
           throw new TypeError(`${functionName}: the last record ${recordNo} has only one field, but 'preserveEmptyLine' is set to false!`);
         }
       }
@@ -183,7 +192,6 @@ function replacer(match) {
 function checkValues(recordSet, parameters, functionName) {
   checkRecordSet(recordSet, functionName);
   const hasHeader = parameters.hasHeader || false;
-  const preserveEmptyLine = parameters.preserveEmptyLine || false;
   recordSet.forEach((record, recordNo) => {
     record.forEach((field, fieldNo) => {
       if (field[3][0] !== '') {
@@ -210,9 +218,8 @@ function checkValues(recordSet, parameters, functionName) {
   if (recordSet.length > 1) {
     const firstRecord = recordSet[0];
     const lastRecord = recordSet[recordSet.length - 1];
-    if (firstRecord.length > 1 && lastRecord.length === 1 && preserveEmptyLine) {
-      if (lastRecord[0][1][0] !== '\r\n' || lastRecord[0][2][0] !== '' || lastRecord[0][3][0] !== ''
-          || lastRecord[0][1][1] !== 0 || lastRecord[0][2][1] !== 2 || lastRecord[0][3][1] !== 2) {
+    if (lastRecord.length === 1 && firstRecord.length > 1) {
+      if (!emptyField(lastRecord[0])) {
         throw new TypeError(`${functionName}: when 'preserveEmptyLine' is set to true, the only field of the last record ${recordSet.length - 1} is not empty!'`);
       }
     }
@@ -254,8 +261,7 @@ function recordsToDataTree(recordSet, parameters, functionName) {
     filteredRecords = recordSet.filter(
       (record, recordNo) => (
         recordNo < recordSet.length - 1 || record.length > 1
-        || record[0][1][0] !== '\r\n' || record[0][2][0] !== '' || record[0][3][0] !== ''
-        || record[0][1][1] !== 0 || record[0][2][1] !== 2 || record[0][3][1] !== 2
+        || !emptyField(record[0])
         || recordSet[0].length < 2
       ),
     );
