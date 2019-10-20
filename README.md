@@ -68,7 +68,7 @@ JSON string:
 
 Parsinimo procesas suskirstytas į 5 funkcijas: makeRecords, checkRecords, checkValues, recordsToDataTree, makeDataTree.
 
-**makeRecords(csvString: string)** - grąžina masyvą, kurio kiekvienas elementas yra csv įrašas, o kiekvienas elemento elementas yra laukas, turintis keturias dalis, sudarytas iš dviejų elementų.
+**makeRecords(csvString : string)** - grąžina masyvą, kurio kiekvienas elementas yra csv įrašas, o kiekvienas elemento elementas yra laukas, turintis keturias dalis, sudarytas iš dviejų elementų.
 Funkcijos argumentai: 
 1. csvString - privaloma csv teksto eilutė.
 
@@ -78,13 +78,13 @@ Lauko dalys yra tokios:
 3. validi lauko dalis ir jos pozicija lauke,
 4. nevalidi lauko dalis ir jos pozicija lauke.
 
-**ckeckRecords(recordSet: array, parameters := {}, functionName := '')** - tikrina, ar įrašų masyvas turi teisingą struktūrą. 
+**ckeckRecords(recordSet : array, parameters := {}, functionName := '')** - tikrina, ar įrašų masyvas turi teisingą struktūrą. 
 Funkcijos argumentai: 
 1. recordSet - privalomas įrašų masyvas 
 2. parameters - neprivalomas { preserveEmptyLine: false }; jeigu parametras yra true, klaida nėra generuojama tuo atveju, kai paskutinis recordSet'o įrašas turi vienintelį tuščią lauką, t.y. csv eilutė baigiasi CrLf,
 3. functionName - neprivalomas funkcijos, kurioje inicijuota patikra, pavadinimas; jeigu parametras tuščias, klaidos pranešimuose nurodoma funkcija 'checkRecords'.  
 
-**checkValues(recordSet array, parameters := {}, functionName := '')** - tikrina, ar įrašų masyvo laukuose nėra klaidingų simbolių.
+**checkValues(recordSet : array, parameters := {}, functionName := '')** - tikrina, ar įrašų masyvo laukuose nėra klaidingų simbolių.
 Lauke negali būti:
 1. dvigubų kabučių, jeigu laukas prasideda kitu simboliu, nei dvigubos kabutės;
 2. jokių simbolių po antrųjų dvigubų kabučių, prieš kurias nėra kairinio brūkšnio (angl. *backslash*), jeigu laukas prasideda dvigubomis kabutėmis.
